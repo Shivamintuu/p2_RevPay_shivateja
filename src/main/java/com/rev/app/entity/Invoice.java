@@ -33,10 +33,10 @@ public class Invoice {
     private LocalDateTime createdAt;
 
     @ManyToOne
-    @NotNull(message = "Business profile is required")
-    private BusinessProfile businessProfile;
+    @NotNull(message = "Business user is required")
+    private BusinessUser businessUser;
 
     @ManyToOne
-    @NotNull(message = "Customer is required")
-    private Customer customer;
+    @NotNull(message = "Personal user is required")
+    private PersonalUser personalUser;
 }

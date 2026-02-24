@@ -42,4 +42,8 @@ public class Transaction {
     @ManyToOne
     @NotNull(message = "Receiver is required")
     private User receiver;
+
+    // Used to reference related entities like Loan or Invoice (merge of InvoicePayment/LoanRepayment)
+    private String referenceType;
+    private Long referenceId;
 }

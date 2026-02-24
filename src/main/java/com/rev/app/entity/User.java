@@ -12,6 +12,7 @@ import lombok.Setter;
 import java.time.LocalDateTime;
 
 @Entity
+@Table(name = "users")
 @Getter @Setter
 public class User {
 
@@ -40,9 +41,16 @@ public class User {
     @NotNull(message = "User status is required")
     private UserStatus status;
 
+    private boolean emailNotificationsEnabled = true;
+
+    private boolean smsNotificationsEnabled = true;
+
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
     @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
     private Wallet wallet;
+
+    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
+    private UserSecurity security;
 }

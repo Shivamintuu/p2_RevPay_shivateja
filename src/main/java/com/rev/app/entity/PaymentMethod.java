@@ -20,6 +20,17 @@ public class PaymentMethod {
 
     private boolean isDefault;
 
+    // Bank Account fields (nullable for cards/wallets)
+    private String accountNumber;
+    private String bankName;
+    private String ifscCode;
+
+    // Card Details fields (nullable for banks/wallets)
+    private String cardNumber;
+    private String expiryDate;
+    private String cvv;
+    private String billingAddress;
+
     @ManyToOne
     @NotNull(message = "User is required")
     private User user;
