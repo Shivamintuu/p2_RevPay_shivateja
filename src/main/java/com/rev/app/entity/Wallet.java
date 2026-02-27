@@ -1,25 +1,30 @@
 package com.rev.app.entity;
 
 import jakarta.persistence.*;
-import jakarta.validation.constraints.NotNull;
-import lombok.Getter;
-import lombok.Setter;
-
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 import java.math.BigDecimal;
 
 @Entity
-@Getter @Setter
+@Table(name = "wallets")
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
 public class Wallet {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @NotNull(message = "Balance is required")
-    private BigDecimal balance;
+    @Column(nullable = false)
+    private BigDecimal balance = BigDecimal.ZERO;
 
     @OneToOne
-    @JoinColumn(name = "user_id")
-    @NotNull(message = "User is required")
+    @JoinColumn(name = "user_id", referencedColumnName = "id", nullable = false)
     private User user;
+
+    public Wallet(User user) {
+        this.user = user;
+    }
 }

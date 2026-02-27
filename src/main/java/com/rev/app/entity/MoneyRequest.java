@@ -1,42 +1,45 @@
 package com.rev.app.entity;
 
-import com.rev.app.enums.MoneyRequestStatus;
 import jakarta.persistence.*;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Positive;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Entity
-@Getter @Setter
+@Table(name = "money_requests")
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
 public class MoneyRequest {
+
+    public enum RequestStatus {
+        PENDING, ACCEPTED, DECLINED, CANCELLED
+    }
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @NotNull(message = "Amount is required")
-    @Positive(message = "Amount must be positive")
-    private BigDecimal amount;
-
-    @NotBlank(message = "Purpose is required")
-    private String purpose;
-
-    @Enumerated(EnumType.STRING)
-    @NotNull(message = "Status is required")
-    private MoneyRequestStatus status;
-
-    private LocalDateTime createdAt;
-
     @ManyToOne
-    @NotNull(message = "Requester is required")
+    @JoinColumn(name = "requester_id", nullable = false)
     private User requester;
 
     @ManyToOne
-    @NotNull(message = "Receiver is required")
-    private User receiver;
+    @JoinColumn(name = "requestee_id", nullable = false)
+    private User requestee;
+
+    @Column(nullable = false)
+    private BigDecimal amount;
+
+    private String purpose;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private RequestStatus status;
+
+    @Column(nullable = false)
+    private LocalDateTime createdAt = LocalDateTime.now();
 }

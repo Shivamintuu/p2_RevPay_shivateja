@@ -1,37 +1,42 @@
 package com.rev.app.entity;
 
-import com.rev.app.enums.PaymentMethodType;
 import jakarta.persistence.*;
-import jakarta.validation.constraints.NotNull;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Entity
-@Getter @Setter
+@Table(name = "payment_methods")
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
 public class PaymentMethod {
+
+    public enum PaymentMethodType {
+        CREDIT_CARD, DEBIT_CARD, BANK_ACCOUNT
+    }
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @ManyToOne
+    @JoinColumn(name = "user_id", nullable = false)
+    private User user;
+
     @Enumerated(EnumType.STRING)
-    @NotNull(message = "Method type is required")
-    private PaymentMethodType methodType;
+    @Column(nullable = false)
+    private PaymentMethodType type;
 
-    private boolean isDefault;
+    @Column(nullable = false)
+    private String accountNumber; // encrypted
 
-    // Bank Account fields (nullable for cards/wallets)
-    private String accountNumber;
-    private String bankName;
-    private String ifscCode;
-
-    // Card Details fields (nullable for banks/wallets)
-    private String cardNumber;
     private String expiryDate;
+
     private String cvv;
+
     private String billingAddress;
 
-    @ManyToOne
-    @NotNull(message = "User is required")
-    private User user;
+    @Column(nullable = false)
+    private boolean isDefault = false;
 }

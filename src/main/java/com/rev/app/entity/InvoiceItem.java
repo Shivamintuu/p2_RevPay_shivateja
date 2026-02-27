@@ -1,39 +1,35 @@
 package com.rev.app.entity;
 
 import jakarta.persistence.*;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Positive;
-import jakarta.validation.constraints.PositiveOrZero;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
 
 @Entity
-@Getter @Setter
+@Table(name = "invoice_items")
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
 public class InvoiceItem {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @NotBlank(message = "Description is required")
+    @ManyToOne
+    @JoinColumn(name = "invoice_id", nullable = false)
+    private Invoice invoice;
+
+    @Column(nullable = false)
     private String description;
 
-    @NotNull(message = "Quantity is required")
-    @Positive(message = "Quantity must be positive")
+    @Column(nullable = false)
     private Integer quantity;
 
-    @NotNull(message = "Unit price is required")
-    @PositiveOrZero(message = "Unit price must be zero or positive")
+    @Column(nullable = false)
     private BigDecimal unitPrice;
 
-    @NotNull(message = "Tax is required")
-    @PositiveOrZero(message = "Tax must be zero or positive")
     private BigDecimal tax;
-
-    @ManyToOne
-    @NotNull(message = "Invoice is required")
-    private Invoice invoice;
 }

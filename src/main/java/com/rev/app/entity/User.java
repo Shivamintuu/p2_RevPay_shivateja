@@ -1,56 +1,64 @@
 package com.rev.app.entity;
 
-import com.rev.app.enums.AccountType;
-import com.rev.app.enums.UserStatus;
 import jakarta.persistence.*;
-import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import lombok.EqualsAndHashCode;
 
-import java.time.LocalDateTime;
+import org.hibernate.annotations.SQLDelete;
+import org.hibernate.annotations.SQLRestriction;
 
 @Entity
 @Table(name = "users")
-@Getter @Setter
-public class User {
+@SQLDelete(sql = "UPDATE users SET deleted = true WHERE id=?")
+@SQLRestriction("deleted = false")
+@Data
+@EqualsAndHashCode(callSuper=false)
+@NoArgsConstructor
+@AllArgsConstructor
+public class User extends Auditable {
+
+    public enum Role {
+        PERSONAL, BUSINESS
+    }
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @NotBlank(message = "Full name is required")
+    @Column(nullable = false)
     private String fullName;
 
-    @Email(message = "Invalid email format")
-    @NotBlank(message = "Email is required")
+    @Column(nullable = false, unique = true)
     private String email;
 
-    @NotBlank(message = "Phone number is required")
-    private String phone;
+    @Column(nullable = false, unique = true)
+    private String phoneNumber;
 
-    @NotBlank(message = "Password is required")
+    @Column(nullable = false)
     private String password;
 
-    @Enumerated(EnumType.STRING)
-    @NotNull(message = "Account type is required")
-    private AccountType accountType;
+    @Column(nullable = false)
+    private String securityQuestion;
+
+    @Column(nullable = false)
+    private String securityAnswer;
+
+    private String transactionPin;
+
+    private String twoFactorOtp;
+    
+    private java.time.LocalDateTime twoFactorOtpExpiry;
 
     @Enumerated(EnumType.STRING)
-    @NotNull(message = "User status is required")
-    private UserStatus status;
+    @Column(nullable = false)
+    private Role role;
 
-    private boolean emailNotificationsEnabled = true;
-
-    private boolean smsNotificationsEnabled = true;
-
-    private LocalDateTime createdAt;
-    private LocalDateTime updatedAt;
-
-    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
-    private Wallet wallet;
-
-    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
-    private UserSecurity security;
+    // Business specific fields
+    private String businessName;
+    private String businessType;
+    private String taxId;
+    private String businessAddress;
+    private Boolean isBusinessVerified;
 }

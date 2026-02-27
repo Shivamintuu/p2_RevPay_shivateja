@@ -1,42 +1,59 @@
 package com.rev.app.entity;
 
-import com.rev.app.enums.InvoiceStatus;
 import jakarta.persistence.*;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.PositiveOrZero;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import lombok.EqualsAndHashCode;
 
-import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
+
+import org.hibernate.annotations.SQLDelete;
+import org.hibernate.annotations.SQLRestriction;
 
 @Entity
-@Getter @Setter
-public class Invoice {
+@Table(name = "invoices")
+@SQLDelete(sql = "UPDATE invoices SET deleted = true WHERE id=?")
+@SQLRestriction("deleted = false")
+@Data
+@EqualsAndHashCode(callSuper=false)
+@NoArgsConstructor
+@AllArgsConstructor
+public class Invoice extends Auditable {
+
+    public enum InvoiceStatus {
+        DRAFT, SENT, PAID, OVERDUE, CANCELLED
+    }
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @NotNull(message = "Total amount is required")
-    @PositiveOrZero(message = "Total amount must be zero or positive")
-    private BigDecimal totalAmount;
+    @ManyToOne
+    @JoinColumn(name = "business_user_id", nullable = false)
+    private User businessUser;
 
-    @NotNull(message = "Due date is required")
-    private LocalDate dueDate;
+    @Column(nullable = false)
+    private String customerName;
+
+    private String customerEmail;
+    
+    private String customerAddress;
 
     @Enumerated(EnumType.STRING)
-    @NotNull(message = "Status is required")
+    @Column(nullable = false)
     private InvoiceStatus status;
 
-    private LocalDateTime createdAt;
+    private String paymentTerms;
 
-    @ManyToOne
-    @NotNull(message = "Business user is required")
-    private BusinessUser businessUser;
+    @Column(nullable = false)
+    private LocalDate dueDate;
 
-    @ManyToOne
-    @NotNull(message = "Personal user is required")
-    private PersonalUser personalUser;
+    @Column(nullable = false)
+    private LocalDateTime createdAt = LocalDateTime.now();
+
+    @OneToMany(mappedBy = "invoice", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<InvoiceItem> items;
 }
