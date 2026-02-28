@@ -39,4 +39,8 @@ public class UserDTO {
     private String taxId;
     private String businessAddress;
     private Boolean isBusinessVerified;
+    
+    @NotBlank(message = "Transaction PIN is required")
+    @Size(min = 4, max = 6, message = "PIN must be between 4 and 6 digits")
+    private String transactionPin;
 }

@@ -51,4 +51,21 @@ public class EmailServiceImpl implements IEmailService {
             log.info("DEVELOPMENT MODE Notification for {}: {}", to, changeDetails);
         }
     }
+
+    @Override
+    public void sendTransactionNotification(String to, String messageDetails) {
+        log.info("Sending transaction notification to {}", to);
+        try {
+            SimpleMailMessage message = new SimpleMailMessage();
+            message.setFrom("revpay.demo@gmail.com");
+            message.setTo(to);
+            message.setSubject("RevPay - Transaction Alert");
+            message.setText("Hello,\n\nWe wanted to alert you about a recent transaction on your RevPay account:\n\n" + messageDetails + "\n\nIf you did not make this transaction, please contact support immediately.");
+            emailSender.send(message);
+            log.info("Transaction email sent successfully to {}", to);
+        } catch (Exception e) {
+            log.error("Failed to send transaction email to {}", to, e);
+            log.info("DEVELOPMENT MODE Transaction Alert for {}: {}", to, messageDetails);
+        }
+    }
 }

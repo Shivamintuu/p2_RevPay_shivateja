@@ -98,6 +98,11 @@ public class AuthRestController {
         user.setTwoFactorOtpExpiry(null);
         userRepository.save(user);
 
+    // OTP is valid, clear it
+        user.setTwoFactorOtp(null);
+        user.setTwoFactorOtpExpiry(null);
+        userRepository.save(user);
+
         // Generate JWT
         Authentication authentication = new UsernamePasswordAuthenticationToken(user.getEmail(), null, java.util.Collections.emptyList());
         // Getting UserDetails requires loading user, or we can just use the email
@@ -113,6 +118,61 @@ public class AuthRestController {
         response.put("user", userDTO);
 
         return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/resend-otp")
+    public ResponseEntity<?> resendOtp(@RequestBody ResendOtpRequest request) {
+        com.rev.app.entity.User user = userRepository.findByEmail(request.getEmail())
+                .orElseThrow(() -> new com.rev.app.exception.ResourceNotFoundException("User not found"));
+
+        String otp = String.format("%06d", new Random().nextInt(999999));
+        user.setTwoFactorOtp(otp);
+        user.setTwoFactorOtpExpiry(LocalDateTime.now().plusMinutes(5));
+        userRepository.save(user);
+
+        emailService.sendOtpEmail(user.getEmail(), otp);
+
+        return ResponseEntity.ok(Map.of("message", "A new OTP has been sent to your email."));
+    }
+
+    @PostMapping("/forgot-password")
+    public ResponseEntity<?> forgotPassword(@RequestBody ForgotPasswordRequest request) {
+        com.rev.app.entity.User user = userRepository.findByEmail(request.getEmail())
+                .orElseThrow(() -> new com.rev.app.exception.ResourceNotFoundException("If the email is registered, you will receive an OTP."));
+
+        String otp = String.format("%06d", new Random().nextInt(999999));
+        user.setTwoFactorOtp(otp);
+        user.setTwoFactorOtpExpiry(LocalDateTime.now().plusMinutes(10));
+        userRepository.save(user);
+
+        emailService.sendOtpEmail(user.getEmail(), otp);
+
+        return ResponseEntity.ok(Map.of("message", "An OTP has been sent to your email to reset your password."));
+    }
+
+    @PostMapping("/reset-password")
+    public ResponseEntity<?> resetPassword(@RequestBody ResetPasswordRequest request) {
+        com.rev.app.entity.User user = userRepository.findByEmail(request.getEmail())
+                .orElseThrow(() -> new com.rev.app.exception.ResourceNotFoundException("User not found"));
+
+        if (user.getTwoFactorOtp() == null || !user.getTwoFactorOtp().equals(request.getOtp())) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("message", "Invalid OTP"));
+        }
+
+        if (user.getTwoFactorOtpExpiry() == null || user.getTwoFactorOtpExpiry().isBefore(LocalDateTime.now())) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("message", "OTP expired"));
+        }
+
+        // OTP is valid, clear it
+        user.setTwoFactorOtp(null);
+        user.setTwoFactorOtpExpiry(null);
+
+        org.springframework.security.crypto.password.PasswordEncoder encoder = new org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder();
+        user.setPassword(encoder.encode(request.getNewPassword()));
+        
+        userRepository.save(user);
+
+        return ResponseEntity.ok(Map.of("message", "Password has been successfully reset. You can now login."));
     }
 
     // Inner classes for Request Bodies
@@ -144,5 +204,30 @@ public class AuthRestController {
         public void setEmail(String email) { this.email = email; }
         public String getOtp() { return otp; }
         public void setOtp(String otp) { this.otp = otp; }
+    }
+
+    public static class ResendOtpRequest {
+        private String email;
+        public String getEmail() { return email; }
+        public void setEmail(String email) { this.email = email; }
+    }
+
+    public static class ForgotPasswordRequest {
+        private String email;
+        public String getEmail() { return email; }
+        public void setEmail(String email) { this.email = email; }
+    }
+
+    public static class ResetPasswordRequest {
+        private String email;
+        private String otp;
+        private String newPassword;
+
+        public String getEmail() { return email; }
+        public void setEmail(String email) { this.email = email; }
+        public String getOtp() { return otp; }
+        public void setOtp(String otp) { this.otp = otp; }
+        public String getNewPassword() { return newPassword; }
+        public void setNewPassword(String newPassword) { this.newPassword = newPassword; }
     }
 }

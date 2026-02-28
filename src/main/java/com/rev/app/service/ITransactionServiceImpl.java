@@ -36,22 +36,25 @@ public class ITransactionServiceImpl implements ITransactionService {
     private final IWalletRepository walletRepository;
     private final TransactionMapper transactionMapper;
     private final PasswordEncoder passwordEncoder;
+    private final IEmailService emailService;
 
     @Autowired
     public ITransactionServiceImpl(ITransactionRepository transactionRepository, 
                                    IUserRepository userRepository, 
                                    IWalletRepository walletRepository,
                                    TransactionMapper transactionMapper,
-                                   PasswordEncoder passwordEncoder) {
+                                   PasswordEncoder passwordEncoder,
+                                   IEmailService emailService) {
         this.transactionRepository = transactionRepository;
         this.userRepository = userRepository;
         this.walletRepository = walletRepository;
         this.transactionMapper = transactionMapper;
         this.passwordEncoder = passwordEncoder;
+        this.emailService = emailService;
     }
 
     @Override
-    @Transactional
+    @Transactional(noRollbackFor = {InsufficientFundsException.class, BadRequestException.class, InvalidCredentialsException.class})
     @Caching(evict = {
         @CacheEvict(value = "wallets", key = "#senderId"),
         @CacheEvict(value = "wallets", key = "#recipientId"),
@@ -92,8 +95,8 @@ public class ITransactionServiceImpl implements ITransactionService {
             failedTx.setAmount(amount);
             failedTx.setType(TransactionType.SEND);
             failedTx.setStatus(TransactionStatus.FAILED);
-            failedTx.setNote("Failed: " + note);
-            transactionRepository.save(failedTx);
+            failedTx.setNote("Failed: Insufficient Funds. " + note);
+            transactionRepository.saveAndFlush(failedTx); // Force flush to DB before exception
 
             throw new InsufficientFundsException("Insufficient funds to send: " + amount);
         }
@@ -114,8 +117,15 @@ public class ITransactionServiceImpl implements ITransactionService {
         tx.setType(TransactionType.SEND);
         tx.setStatus(TransactionStatus.COMPLETED);
         tx.setNote(note);
+        
+        Transaction savedTx = transactionRepository.save(tx);
+        
+        emailService.sendTransactionNotification(sender.getEmail(), 
+                "You successfully sent " + amount + " to " + recipient.getFullName() + ".");
+        emailService.sendTransactionNotification(recipient.getEmail(), 
+                "You successfully received " + amount + " from " + sender.getFullName() + ".");
 
-        return transactionMapper.toDTO(transactionRepository.save(tx));
+        return transactionMapper.toDTO(savedTx);
     }
 
     @Override

@@ -58,6 +58,10 @@ public class IUserServiceImpl implements IUserService {
         user.setRole(Role.PERSONAL);
         user.setPassword(passwordEncoder.encode(password));
         
+        if (userDTO.getTransactionPin() != null && !userDTO.getTransactionPin().isEmpty()) {
+            user.setTransactionPin(passwordEncoder.encode(userDTO.getTransactionPin()));
+        }
+        
         User savedUser = userRepository.save(user);
         
         // Create initial empty wallet
@@ -78,6 +82,10 @@ public class IUserServiceImpl implements IUserService {
         user.setRole(Role.BUSINESS);
         user.setPassword(passwordEncoder.encode(password));
         user.setIsBusinessVerified(false); // Pending verification ideally
+        
+        if (userDTO.getTransactionPin() != null && !userDTO.getTransactionPin().isEmpty()) {
+            user.setTransactionPin(passwordEncoder.encode(userDTO.getTransactionPin()));
+        }
         
         User savedUser = userRepository.save(user);
         

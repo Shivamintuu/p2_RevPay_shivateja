@@ -1,6 +1,7 @@
 package com.rev.app.rest;
 
 import com.rev.app.entity.Invoice.InvoiceStatus;
+import com.rev.app.entity.Transaction.TransactionStatus;
 import com.rev.app.entity.Transaction.TransactionType;
 import com.rev.app.service.IInvoiceService;
 import com.rev.app.service.ITransactionService;
@@ -44,16 +45,19 @@ public class BusinessAnalyticsRestController {
         
         Map<String, Object> summary = new HashMap<>();
 
-        // 1. Calculate Total Received (Transactions where user is recipient AND type is SEND or PAYMENT)
+        // 1. Calculate Total Received
         BigDecimal totalReceived = transactionService.getTransactionsByUserId(businessUserId).stream()
-                .filter(t -> t.getRecipientId().equals(businessUserId) 
-                          && (t.getType() == TransactionType.SEND || t.getType() == TransactionType.PAYMENT))
+                .filter(t -> t.getStatus() == TransactionStatus.COMPLETED)
+                .filter(t -> t.getRecipientId() != null && t.getRecipientId().equals(businessUserId))
+                .filter(t -> t.getType() == TransactionType.SEND || t.getType() == TransactionType.PAYMENT || t.getType() == TransactionType.ADD_FUNDS)
                 .map(t -> t.getAmount())
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
 
-        // 2. Calculate Total Sent (Transactions where user is sender)
+        // 2. Calculate Total Sent
         BigDecimal totalSent = transactionService.getTransactionsByUserId(businessUserId).stream()
-                .filter(t -> t.getSenderId().equals(businessUserId) && t.getType() == TransactionType.SEND)
+                .filter(t -> t.getStatus() == TransactionStatus.COMPLETED)
+                .filter(t -> t.getSenderId() != null && t.getSenderId().equals(businessUserId))
+                .filter(t -> t.getType() == TransactionType.SEND || t.getType() == TransactionType.PAYMENT || t.getType() == TransactionType.WITHDRAW)
                 .map(t -> t.getAmount())
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
 

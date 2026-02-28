@@ -45,6 +45,27 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(errors, HttpStatus.BAD_REQUEST);
     }
 
+    @ExceptionHandler(org.springframework.dao.DataIntegrityViolationException.class)
+    public ResponseEntity<ErrorDetails> handleDataIntegrityViolationException(org.springframework.dao.DataIntegrityViolationException ex) {
+        String message = "A data integrity error occurred.";
+        if (ex.getMostSpecificCause() != null) {
+            String causeMessage = ex.getMostSpecificCause().getMessage().toLowerCase();
+            if (causeMessage.contains("unique constraint") || causeMessage.contains("ora-00001")) {
+                if (causeMessage.contains("phone_number") || causeMessage.contains("phone")) {
+                    message = "The provided phone number is already registered.";
+                } else if (causeMessage.contains("email")) {
+                    message = "The provided email is already registered.";
+                } else {
+                    message = "A record with the given unique details already exists.";
+                }
+            } else {
+                message = "Data integrity violation: " + ex.getMostSpecificCause().getMessage();
+            }
+        }
+        ErrorDetails errorDetails = new ErrorDetails(LocalDateTime.now(), message, "CONFLICT");
+        return new ResponseEntity<>(errorDetails, HttpStatus.CONFLICT);
+    }
+
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorDetails> handleGlobalException(Exception ex) {
         ErrorDetails errorDetails = new ErrorDetails(LocalDateTime.now(), "An unexpected error occurred: " + ex.getMessage(), "INTERNAL_SERVER_ERROR");
