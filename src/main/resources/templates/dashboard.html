@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <div th:replace="~{fragments/layout :: headFragment('Dashboard | RevPay')}"></div>
+</head>
+
+<body>
+    <div th:replace="~{fragments/layout :: headerFragment}"></div>
+
+    <div class="main-content" id="appMainContent" style="display:none;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
+            <h1 style="font-weight: 600; font-size: 1.8rem; margin: 0;">
+                <span id="welcomeMsg">Welcome!</span>
+                <span id="roleBadge" class="role-badge" style="display:none;"></span>
+            </h1>
+        </div>
+
+        <!-- Enterprise Balance Card -->
+        <div class="enterprise-balance-card">
+            <h3>Wallet Balance</h3>
+            <div class="balance-amount" id="walletBalance">$0.00</div>
+            <div class="balance-actions">
+                <button onclick="window.location.href='/wallet'" class="btn btn-add">
+                    <span>+</span> Add Funds
+                </button>
+                <button onclick="window.location.href='/wallet'" class="btn btn-withdraw">
+                    <span>↓</span> Withdraw
+                </button>
+                <button onclick="window.location.href='/transaction/send'" class="btn btn-send">
+                    <span>↗</span> Send Money
+                </button>
+                <button onclick="window.location.href='/transaction/requests'" class="btn btn-request">
+                    <span>⇄</span> Request Money
+                </button>
+            </div>
+        </div>
+
+        <!-- KPI Widgets -->
+        <div
+            style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; margin-bottom: 30px;">
+            <div class="card" style="display: flex; align-items: center; gap: 20px; padding: 25px;">
+                <div style="font-size: 2rem; color: #64748b;">✉</div>
+                <div>
+                    <div style="font-size: 1.5rem; font-weight: 700; color: #1e1b4b;" id="pendingRequestsCount">0</div>
+                    <div style="color: #64748b; font-size: 0.9rem;">Pending Requests</div>
+                </div>
+            </div>
+            <div class="card" style="display: flex; align-items: center; gap: 20px; padding: 25px;">
+                <div style="font-size: 2rem; color: #64748b;">🔔</div>
+                <div>
+                    <div style="font-size: 1.5rem; font-weight: 700; color: #1e1b4b;" id="notificationCount">0</div>
+                    <div style="color: #64748b; font-size: 0.9rem;">Unread Notifications</div>
+                </div>
+            </div>
+
+            <!-- Business Only Cards -->
+            <div id="businessKpis" style="display: contents;">
+                <div class="card business-only" style="display: none; align-items: center; gap: 20px; padding: 25px;">
+                    <div style="font-size: 2rem; color: #22c55e;">📈</div>
+                    <div>
+                        <div style="font-size: 1.5rem; font-weight: 700; color: #1e1b4b;" id="totalReceived">$0.00</div>
+                        <div style="color: #64748b; font-size: 0.9rem;">Total Received</div>
+                    </div>
+                </div>
+                <div class="card business-only" style="display: none; align-items: center; gap: 20px; padding: 25px;">
+                    <div style="font-size: 2rem; color: #ef4444;">📉</div>
+                    <div>
+                        <div style="font-size: 1.5rem; font-weight: 700; color: #1e1b4b;" id="totalSent">$0.00</div>
+                        <div style="color: #64748b; font-size: 0.9rem;">Total Sent</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Transactions -->
+        <div class="card">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h3 style="margin: 0; color: #1e1b4b;">Recent Transactions</h3>
+                <a th:href="@{/transaction/history}"
+                    style="color: #6366f1; text-decoration: none; font-size: 0.9rem; font-weight: 600;">View All →</a>
+            </div>
+
+            <div id="noTransactions" style="text-align: center; padding: 40px; color: #64748b;">
+                No transactions yet. Start by sending money or adding funds.
+            </div>
+
+            <table id="transactionsTable" style="display:none; width: 100%; border-collapse: collapse;">
+                <thead>
+                    <tr style="border-bottom: 1px solid #e2e8f0; text-align: left; color: #64748b; font-size: 0.85rem;">
+                        <th style="padding: 12px 0;">Date</th>
+                        <th style="padding: 12px 0;">Type</th>
+                        <th style="padding: 12px 0;">Amount</th>
+                        <th style="padding: 12px 0;">From/To</th>
+                        <th style="padding: 12px 0;">Status</th>
+                    </tr>
+                </thead>
+                <tbody id="transactionList">
+                    <!-- Populated by JS -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div th:replace="~{fragments/layout :: footerFragment}"></div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            const user = JSON.parse(sessionStorage.getItem('user'));
+            const userId = sessionStorage.getItem('userId');
+            if (!userId) return;
+
+            try {
+                // Fetch Balance
+                const walletRes = await fetchWithAuth(`/api/wallets/user/${userId}`);
+                if (walletRes.ok) {
+                    const wallet = await walletRes.json();
+                    document.getElementById('walletBalance').innerText = `$${wallet.balance.toFixed(2)}`;
+                }
+
+                // If Business, Fetch Analytics
+                if (user && user.role === 'BUSINESS') {
+                    try {
+                        const analyticsRes = await fetchWithAuth(`/api/analytics/business/${userId}/summary`);
+                        if (analyticsRes.ok) {
+                            const data = await analyticsRes.json();
+                            document.getElementById('totalReceived').innerText = `$${(data.totalReceived || 0).toFixed(2)}`;
+                            document.getElementById('totalSent').innerText = `$${(data.totalSent || 0).toFixed(2)}`;
+                        }
+                    } catch (e) { console.error("Analytics fetch failed", e); }
+                }
+
+                // Fetch Unread Notifications Count
+                try {
+                    const notifyRes = await fetchWithAuth(`/api/notifications/user/${userId}/unread`);
+                    if (notifyRes.ok) {
+                        const unreadNotifs = await notifyRes.json();
+                        document.getElementById('notificationCount').innerText = unreadNotifs.length;
+                    }
+                } catch (e) { console.error("Error loading notification count:", e); }
+
+                // Fetch Pending Incoming Requests Count
+                try {
+                    const reqRes = await fetchWithAuth(`/api/money-requests/user/${userId}/incoming`);
+                    if (reqRes.ok) {
+                        const incomingReqs = await reqRes.json();
+                        const pendingReqs = incomingReqs.filter(req => req.status === 'PENDING');
+                        document.getElementById('pendingRequestsCount').innerText = pendingReqs.length;
+                    }
+                } catch (e) { console.error("Error loading pending requests:", e); }
+
+                // Fetch Recent Transactions
+                const transRes = await fetchWithAuth(`/api/transactions/user/${userId}`);
+                if (transRes.ok) {
+                    const transactions = await transRes.json();
+                    if (transactions.length > 0) {
+                        document.getElementById('noTransactions').style.display = 'none';
+                        const table = document.getElementById('transactionsTable');
+                        const list = document.getElementById('transactionList');
+                        table.style.display = 'table';
+
+                        // Show only last 5
+                        transactions.slice(0, 5).forEach(t => {
+                            const isCredit = t.type === 'DEPOSIT' || t.type === 'ADD_FUNDS' || (t.recipientId == userId && t.type === 'SEND');
+
+                            // Handling array-based dates from Spring Boot
+                            const dateObj = Array.isArray(t.timestamp)
+                                ? new Date(t.timestamp[0], t.timestamp[1] - 1, t.timestamp[2], t.timestamp[3] || 0, t.timestamp[4] || 0)
+                                : new Date(t.timestamp);
+                            const date = dateObj.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
+
+                            const amountClass = isCredit ? 'text-success' : 'text-danger';
+                            const amountPrefix = isCredit ? '+' : '-';
+
+                            let entityName = '';
+                            if (t.type === 'ADD_FUNDS' || t.type === 'DEPOSIT') {
+                                entityName = 'Bank Transfer';
+                            } else if (t.type === 'WITHDRAW') {
+                                entityName = 'Withdrawal';
+                            } else {
+                                entityName = (t.senderId == userId) ? `To: ${t.recipientName}` : `From: ${t.senderName}`;
+                            }
+
+                            let statusClass = t.status === 'COMPLETED' ? 'status-success' : (t.status === 'FAILED' ? 'status-danger' : 'status-warning');
+
+                            const row = `
+                                <tr style="border-bottom: 1px solid #f1f5f9;">
+                                    <td style="padding: 15px 0; font-size: 0.9rem;">${date}</td>
+                                    <td style="padding: 15px 0;"><span class="status-badge status-${t.type.toLowerCase()}">${t.type.replace('_', ' ')}</span></td>
+                                    <td style="padding: 15px 0; font-weight: 600;" class="${amountClass}">${amountPrefix}$${t.amount.toFixed(2)}</td>
+                                    <td style="padding: 15px 0; font-size: 0.9rem; color: #64748b;">${entityName}</td>
+                                    <td style="padding: 15px 0;"><span class="status-badge ${statusClass}">${t.status}</span></td>
+                                </tr>`;
+                            list.innerHTML += row;
+                        });
+                    }
+                }
+            } catch (err) {
+                console.error("Error loading dashboard data:", err);
+            }
+        });
+    </script>
+</body>
+
+</html>

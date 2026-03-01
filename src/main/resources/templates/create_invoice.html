@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <div th:replace="~{fragments/layout :: headFragment('Create Invoice - RevPay')}"></div>
+    <style>
+        .invoice-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+
+        .invoice-table th,
+        .invoice-table td {
+            padding: 12px;
+            border: 1px solid #e2e8f0;
+            text-align: left;
+        }
+
+        .invoice-table th {
+            background-color: #f8fafc;
+            color: #475569;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+        }
+
+        .invoice-input {
+            width: 100%;
+            border: 1px solid #cbd5e1;
+            border-radius: 4px;
+            padding: 8px;
+            box-sizing: border-box;
+        }
+
+        .btn-remove {
+            background: #fee2e2;
+            color: #dc2626;
+            border: none;
+            border-radius: 4px;
+            padding: 6px 10px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+
+<body>
+    <div th:replace="~{fragments/layout :: headerFragment}"></div>
+
+    <div class="main-content">
+        <h2 style="display: flex; justify-content: space-between; align-items: center;">
+            Create Invoice
+            <a href="/invoice/manage" class="btn" style="background: var(--text-secondary);">Cancel</a>
+        </h2>
+
+        <div class="card" style="max-width: 800px; margin: 0 auto;">
+            <form id="createInvoiceForm" onsubmit="event.preventDefault(); submitInvoice();">
+
+                <h3 style="border-bottom: 2px solid #e2e8f0; padding-bottom: 10px; margin-bottom: 20px;">Customer
+                    Details</h3>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                    <div class="form-group">
+                        <label>Customer Name</label>
+                        <input type="text" id="custName" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Customer Email</label>
+                        <input type="email" id="custEmail" required>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Customer Address</label>
+                    <textarea id="custAddress" rows="2"
+                        style="width: 100%; border: 1px solid #cbd5e1; border-radius: 6px; padding: 8px;"></textarea>
+                </div>
+
+                <h3
+                    style="border-bottom: 2px solid #e2e8f0; padding-bottom: 10px; margin-bottom: 20px; margin-top: 30px;">
+                    Invoice Details</h3>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                    <div class="form-group">
+                        <label>Due Date</label>
+                        <input type="date" id="dueDate" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Payment Terms</label>
+                        <select id="paymentTerms">
+                            <option value="Due on Receipt">Due on Receipt</option>
+                            <option value="Net 15">Net 15</option>
+                            <option value="Net 30">Net 30</option>
+                            <option value="Net 60">Net 60</option>
+                        </select>
+                    </div>
+                </div>
+
+                <h3
+                    style="border-bottom: 2px solid #e2e8f0; padding-bottom: 10px; margin-bottom: 20px; margin-top: 30px; display: flex; justify-content: space-between; align-items: center;">
+                    Line Items
+                    <button type="button" class="btn" onclick="addLineItem()"
+                        style="padding: 6px 15px; font-size: 0.85rem;">+ Add Item</button>
+                </h3>
+
+                <div style="overflow-x: auto;">
+                    <table class="invoice-table" id="itemsTable">
+                        <thead>
+                            <tr>
+                                <th style="width: 40%;">Description</th>
+                                <th style="width: 10%;">Qty</th>
+                                <th style="width: 20%;">Unit Price ($)</th>
+                                <th style="width: 15%;">Tax ($)</th>
+                                <th style="width: 15%;">Total</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody id="itemsBody">
+                            <!-- JS populated rows -->
+                        </tbody>
+                        <tfoot>
+                            <tr>
+                                <td colspan="4" style="text-align: right; font-weight: bold; font-size: 1.2rem;">Grand
+                                    Total:</td>
+                                <td colspan="2"
+                                    style="font-weight: bold; font-size: 1.2rem; color: var(--primary-color);"
+                                    id="grandTotalText">$0.00</td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+
+                <div id="invoiceMsg" style="margin: 20px 0; font-weight: 500;"></div>
+                <button type="submit" class="btn" style="width: 100%; font-size: 1.1rem; padding: 15px;">Generate
+                    Invoice</button>
+            </form>
+        </div>
+    </div>
+
+    <div th:replace="~{fragments/layout :: footerFragment}"></div>
+
+    <script>
+        let itemCount = 0;
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const userStr = sessionStorage.getItem('user');
+            if (!userStr || JSON.parse(userStr).role !== 'BUSINESS') {
+                window.location.href = '/dashboard';
+                return;
+            }
+            addLineItem(); // Start with one row
+        });
+
+        function addLineItem() {
+            itemCount++;
+            const tbody = document.getElementById('itemsBody');
+            const tr = document.createElement('tr');
+            tr.id = `itemRow_${itemCount}`;
+            tr.innerHTML = `
+                <td><input type="text" class="invoice-input item-desc" required></td>
+                <td><input type="number" min="1" class="invoice-input item-qty" value="1" onchange="calculateTotal()" required></td>
+                <td><input type="number" min="0" step="0.01" class="invoice-input item-price" value="0.00" onchange="calculateTotal()" required></td>
+                <td><input type="number" min="0" step="0.01" class="invoice-input item-tax" value="0.00" onchange="calculateTotal()"></td>
+                <td class="item-line-total" style="font-weight: bold;">$0.00</td>
+                <td><button type="button" class="btn-remove" onclick="removeItem(${itemCount})">X</button></td>
+            `;
+            tbody.appendChild(tr);
+            calculateTotal();
+        }
+
+        function removeItem(id) {
+            const row = document.getElementById(`itemRow_${id}`);
+            if (row) {
+                row.remove();
+                calculateTotal();
+            }
+        }
+
+        function calculateTotal() {
+            let grandTotal = 0;
+            const rows = document.querySelectorAll('#itemsBody tr');
+
+            rows.forEach(row => {
+                const qty = parseFloat(row.querySelector('.item-qty').value) || 0;
+                const price = parseFloat(row.querySelector('.item-price').value) || 0;
+                const tax = parseFloat(row.querySelector('.item-tax').value) || 0;
+
+                const lineTotal = (qty * price) + tax;
+                row.querySelector('.item-line-total').innerText = `$${lineTotal.toFixed(2)}`;
+                grandTotal += lineTotal;
+            });
+
+            document.getElementById('grandTotalText').innerText = `$${grandTotal.toFixed(2)}`;
+        }
+
+        async function submitInvoice() {
+            const msg = document.getElementById('invoiceMsg');
+            const items = [];
+            const btn = document.querySelector('#createInvoiceForm button[type="submit"]');
+
+            const rows = document.querySelectorAll('#itemsBody tr');
+            if (rows.length === 0) {
+                msg.innerText = "Please add at least one line item.";
+                msg.style.color = 'red';
+                return;
+            }
+
+            rows.forEach(row => {
+                items.push({
+                    description: row.querySelector('.item-desc').value,
+                    quantity: parseInt(row.querySelector('.item-qty').value),
+                    unitPrice: parseFloat(row.querySelector('.item-price').value),
+                    tax: parseFloat(row.querySelector('.item-tax').value) || 0.00
+                });
+            });
+
+            const user = JSON.parse(sessionStorage.getItem('user'));
+
+            const payload = {
+                customerName: document.getElementById('custName').value,
+                customerEmail: document.getElementById('custEmail').value,
+                customerAddress: document.getElementById('custAddress').value,
+                dueDate: document.getElementById('dueDate').value,
+                paymentTerms: document.getElementById('paymentTerms').value,
+                items: items
+            };
+
+            setButtonLoading(btn, true, 'Generating Invoice...');
+            try {
+                const res = await fetchWithAuth(`/api/invoices/business/${user.id}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                if (res.ok) {
+                    msg.innerText = "Invoice generated successfully! Redirecting...";
+                    msg.style.color = 'green';
+                    setTimeout(() => window.location.href = '/invoice/manage', 1500);
+                } else {
+                    const data = await res.json();
+                    throw new Error(data.message || "Failed to generate invoice");
+                }
+            } catch (err) {
+                msg.innerText = err.message;
+                msg.style.color = 'red';
+                setButtonLoading(btn, false);
+            }
+        }
+    </script>
+</body>
+
+</html>

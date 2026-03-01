@@ -47,6 +47,7 @@ public class IInvoiceServiceImpl implements IInvoiceService {
 
         Invoice invoice = invoiceMapper.toEntity(invoiceDTO);
         invoice.setBusinessUser(businessUser);
+        invoice.setCreatedAt(java.time.LocalDateTime.now()); // Ensure NOT NULL constraint is met
         
         // If status wasn't provided, default to DRAFT
         if (invoice.getStatus() == null) {

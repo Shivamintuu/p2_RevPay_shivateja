@@ -49,6 +49,7 @@ public class ILoanApplicationServiceImpl implements ILoanApplicationService {
         LoanApplication loan = loanApplicationMapper.toEntity(loanApplicationDTO);
         loan.setBusinessUser(businessUser);
         loan.setStatus(LoanStatus.PENDING);
+        loan.setAppliedAt(java.time.LocalDateTime.now()); // Ensure NOT NULL constraint is met
         
         // Hardcode dummy interest rate for simulation
         loan.setInterestRate(new BigDecimal("9.5"));

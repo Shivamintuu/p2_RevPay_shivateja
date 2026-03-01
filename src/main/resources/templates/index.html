@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <div th:replace="~{fragments/layout :: headFragment('Welcome to RevPay')}"></div>
+</head>
+
+<body>
+    <div th:replace="~{fragments/layout :: headerFragment}"></div>
+
+    <div class="container" style="text-align: center; margin-top: 50px;">
+        <h1>Welcome to RevPay!</h1>
+        <p>Your simple, fast, and secure payment and wallet platform.</p>
+
+        <br>
+        <div>
+            <a th:href="@{/login}" class="btn" style="margin-right: 15px;">Login</a>
+            <a th:href="@{/register}" class="btn">Create an Account</a>
+        </div>
+
+        <br><br>
+        <img th:src="@{/img/banner.png}" alt="RevPay Global Finance"
+            style="max-width: 100%; height: auto; border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.15); margin-top: 20px;">
+    </div>
+
+    <div th:replace="~{fragments/layout :: footerFragment}"></div>
+
+    <script>
+        // If already logged in, redirect to dashboard
+        document.addEventListener("DOMContentLoaded", function () {
+            if (sessionStorage.getItem('jwtToken')) {
+                window.location.href = "/dashboard";
+            }
+        });
+    </script>
+</body>
+
+</html>

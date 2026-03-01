@@ -99,20 +99,17 @@
     <!-- Scripts -->
     <script>
         document.addEventListener("DOMContentLoaded", function () {
-            const token = sessionStorage.getItem('jwtToken');
+            const token = sessionStorage.getItem('token') || sessionStorage.getItem('jwtToken');
             const userId = sessionStorage.getItem('userId');
-            const role = sessionStorage.getItem('userRole');
+            const userStr = sessionStorage.getItem('user');
+            const user = userStr ? JSON.parse(userStr) : null;
+            const role = user ? user.role : null;
 
             if (!token || role !== 'BUSINESS') {
                 alert("Unauthorized Access. Business account required.");
                 window.location.href = "/dashboard"; // Fallback to personal
                 return;
             }
-
-            // Adjust navigation
-            document.getElementById("loginLink").style.display = "none";
-            document.getElementById("registerLink").style.display = "none";
-            document.getElementById("logoutLink").style.display = "inline";
 
             // Fetch Analytics Data
             fetch(`/api/analytics/business/${userId}/summary`, {

@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <div th:replace="~{fragments/layout :: headFragment('Profile - RevPay')}"></div>
+</head>
+
+<body>
+    <div th:replace="~{fragments/layout :: headerFragment}"></div>
+
+    <div class="main-content">
+        <h2>User Profile</h2>
+        <div class="card" id="profileCard">
+            <div id="loader">Loading user details...</div>
+            <div id="profileDetails" style="display:none;">
+                <p><strong>Full Name:</strong> <span id="profName"></span></p>
+                <p><strong>Email:</strong> <span id="profEmail"></span></p>
+                <p><strong>Phone Number:</strong> <span id="profPhone"></span></p>
+                <p><strong>Account Type:</strong> <span id="profRole"></span></p>
+                <p><strong>Security Question:</strong> <span id="profQuestion"></span></p>
+
+                <div id="businessInfo"
+                    style="display:none; margin-top: 20px; border-top: 1px solid #ddd; padding-top: 10px;">
+                    <h3>Business Information</h3>
+                    <p><strong>Business Name:</strong> <span id="profBusName"></span></p>
+                    <p><strong>Business Type:</strong> <span id="profBusType"></span></p>
+                </div>
+
+                <div style="margin-top: 20px;">
+                    <a th:href="@{/user/settings}" class="btn">Account Settings</a>
+                </div>
+            </div>
+            <div id="profError" class="error" style="display:none;"></div>
+        </div>
+    </div>
+
+    <div th:replace="~{fragments/layout :: footerFragment}"></div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            const token = sessionStorage.getItem('token') || sessionStorage.getItem('jwtToken');
+            const userId = sessionStorage.getItem('userId') || (sessionStorage.getItem('user') ? JSON.parse(sessionStorage.getItem('user')).id : null);
+
+            if (!userId || !token) {
+                window.location.href = '/login';
+                return;
+            }
+
+            try {
+                // Fetch fresh from API using global helper
+                const response = await fetchWithAuth(`/api/users/${userId}`);
+
+                if (response.ok) {
+                    const data = await response.json();
+                    document.getElementById('profName').innerText = data.fullName;
+                    document.getElementById('profEmail').innerText = data.email;
+                    document.getElementById('profPhone').innerText = data.phoneNumber || 'N/A';
+                    document.getElementById('profRole').innerText = data.role;
+                    document.getElementById('profQuestion').innerText = data.securityQuestion;
+
+                    if (data.role === 'BUSINESS') {
+                        document.getElementById('businessInfo').style.display = 'block';
+                        document.getElementById('profBusName').innerText = data.businessName || 'N/A';
+                        document.getElementById('profBusType').innerText = data.businessType || 'N/A';
+                    }
+
+                    document.getElementById('loader').style.display = 'none';
+                    document.getElementById('profileDetails').style.display = 'block';
+                } else {
+                    throw new Error("Failed to load profile");
+                }
+            } catch (err) {
+                document.getElementById('loader').style.display = 'none';
+                document.getElementById('profError').innerText = err.message;
+                document.getElementById('profError').style.display = 'block';
+            }
+        });
+    </script>
+</body>
+
+</html>
