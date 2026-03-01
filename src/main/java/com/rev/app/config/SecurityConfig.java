@@ -38,7 +38,7 @@ public class SecurityConfig {
                 .requestMatchers("/", "/login", "/register", "/home", "/error", "/favicon.ico", "/css/**", "/js/**", "/images/**").permitAll()
                 .requestMatchers("/api/auth/**").permitAll()
                 .requestMatchers("/api/public/**").permitAll()
-                .requestMatchers("/dashboard/**", "/wallet/**", "/transaction/**", "/user/**", "/invoice/**", "/loan/**", "/payment-method/**", "/money-request/**", "/cards/**", "/notifications/**", "/business/**").permitAll() 
+                .requestMatchers("/admin/**", "/dashboard/**", "/wallet/**", "/transaction/**", "/user/**", "/invoice/**", "/loan/**", "/payment-method/**", "/money-request/**", "/cards/**", "/notifications/**", "/business/**").permitAll() 
                 .anyRequest().authenticated()
             )
             .sessionManagement(session -> session

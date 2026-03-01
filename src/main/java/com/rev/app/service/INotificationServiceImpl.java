@@ -37,6 +37,15 @@ public class INotificationServiceImpl implements INotificationService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found: " + userId));
 
+        // Enforce Notification Preferences
+        if (!user.isTransactionAlerts() && 
+            (type == NotificationType.TRANSACTION || type == NotificationType.MONEY_REQUEST || type == NotificationType.INVOICE)) {
+            return null;
+        }
+        if (!user.isSecurityAlerts() && type == NotificationType.ALERTS) {
+            return null;
+        }
+
         Notification notification = new Notification();
         notification.setUser(user);
         notification.setMessage(message);

@@ -1,0 +1,535 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <div th:replace="~{fragments/layout :: headFragment('Admin Dashboard | RevPay')}"></div>
+</head>
+
+<body>
+    <div th:replace="~{fragments/layout :: headerFragment}"></div>
+
+    <div class="main-content" id="appMainContent" style="display:none;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
+            <h1 style="font-weight: 600; font-size: 1.8rem; margin: 0;">
+                <span>Admin Dashboard</span>
+                <span class="role-badge"
+                    style="background: #fee2e2; color: #991b1b; border-color: #fecaca;">ADMIN</span>
+            </h1>
+        </div>
+
+        <!-- High-Level Metrics -->
+        <div
+            style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; margin-bottom: 30px;">
+            <div class="card"
+                style="display: flex; align-items: center; gap: 20px; padding: 25px; border-left: 4px solid var(--primary-color);">
+                <div style="font-size: 2.5rem; color: var(--primary-color);">👥</div>
+                <div>
+                    <div style="font-size: 1.8rem; font-weight: 800; color: #1e1b4b;" id="metricTotalUsers">0</div>
+                    <div style="color: #64748b; font-size: 0.9rem; font-weight: 600; text-transform: uppercase;">Total
+                        Users</div>
+                </div>
+            </div>
+
+            <div class="card"
+                style="display: flex; align-items: center; gap: 20px; padding: 25px; border-left: 4px solid #22c55e;">
+                <div style="font-size: 2.5rem; color: #22c55e;">💳</div>
+                <div>
+                    <div style="font-size: 1.8rem; font-weight: 800; color: #1e1b4b;" id="metricTotalVolume">$0.00</div>
+                    <div style="color: #64748b; font-size: 0.9rem; font-weight: 600; text-transform: uppercase;">Total
+                        Volume</div>
+                </div>
+            </div>
+
+            <div class="card"
+                style="display: flex; align-items: center; gap: 20px; padding: 25px; border-left: 4px solid #8b5cf6;">
+                <div style="font-size: 2.5rem; color: #8b5cf6;">📊</div>
+                <div>
+                    <div style="font-size: 1.8rem; font-weight: 800; color: #1e1b4b;" id="metricTotalTx">0</div>
+                    <div style="color: #64748b; font-size: 0.9rem; font-weight: 600; text-transform: uppercase;">Total
+                        Transactions</div>
+                </div>
+            </div>
+
+            <div class="card"
+                style="display: flex; align-items: center; gap: 20px; padding: 25px; border-left: 4px solid #10b981;">
+                <div style="font-size: 2.5rem; color: #10b981;">✅</div>
+                <div>
+                    <div style="font-size: 1.5rem; font-weight: 800; color: #1e1b4b;" id="metricSystemStatus">
+                        Checking...</div>
+                    <div style="color: #64748b; font-size: 0.9rem; font-weight: 600; text-transform: uppercase;">System
+                        Status</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- User Management Table -->
+        <div class="card" style="padding: 25px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <div>
+                    <h3 style="margin: 0; color: #1e1b4b; font-size: 1.3rem;">Registered Users</h3>
+                    <span style="font-size: 0.9rem; color: var(--text-secondary);">System Registry</span>
+                </div>
+                <!-- CREATE USER BUTTON -->
+                <button onclick="openUserModal()" class="btn" style="background:var(--primary-color); display:flex; align-items:center; gap:8px;">
+                    <span style="font-size: 1.2rem;">+</span> Create User
+                </button>
+            </div>
+
+            <div style="overflow-x: auto;">
+                <table style="width: 100%; border-collapse: collapse; text-align: left;">
+                    <thead>
+                        <tr
+                            style="border-bottom: 2px solid #e2e8f0; color: #64748b; font-size: 0.85rem; text-transform: uppercase;">
+                            <th style="padding: 15px 10px;">ID</th>
+                            <th style="padding: 15px 10px;">Full Name</th>
+                            <th style="padding: 15px 10px;">Email</th>
+                            <th style="padding: 15px 10px;">Role</th>
+                            <th style="padding: 15px 10px;">Status</th>
+                            <th style="padding: 15px 10px;">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="userTableBody">
+                        <tr>
+                            <td colspan="6" style="padding: 20px; text-align: center; color: #64748b;">Loading users...
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Loan Management Table -->
+        <div class="card" style="padding: 25px; margin-top: 30px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h3 style="margin: 0; color: #1e1b4b; font-size: 1.3rem;">Loan Applications</h3>
+                <span style="font-size: 0.9rem; color: var(--text-secondary);">Business Lending</span>
+            </div>
+
+            <div style="overflow-x: auto;">
+                <table style="width: 100%; border-collapse: collapse; text-align: left;">
+                    <thead>
+                        <tr
+                            style="border-bottom: 2px solid #e2e8f0; color: #64748b; font-size: 0.85rem; text-transform: uppercase;">
+                            <th style="padding: 15px 10px;">ID</th>
+                            <th style="padding: 15px 10px;">Business User</th>
+                            <th style="padding: 15px 10px;">Amount</th>
+                            <th style="padding: 15px 10px;">Purpose</th>
+                            <th style="padding: 15px 10px;">Status</th>
+                            <th style="padding: 15px 10px;">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="loanTableBody">
+                        <tr>
+                            <td colspan="6" style="padding: 20px; text-align: center; color: #64748b;">Loading loans...
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Balance Modal -->
+        <div id="balanceModal" class="modal" style="display:none; position:fixed; z-index:1000; left:0; top:0; width:100%; height:100%; background-color:rgba(0,0,0,0.5);">
+            <div class="modal-content" style="background-color:#fff; margin:15% auto; padding:25px; border-radius:8px; width:90%; max-width:400px;">
+                <h3 style="margin-top:0;">Adjust User Balance</h3>
+                <p style="color:#64748b; font-size:0.9rem;">Target: <strong id="adjustTargetName"></strong></p>
+                <input type="hidden" id="adjustTargetId">
+                
+                <div class="form-group" style="margin-bottom: 15px;">
+                    <label>Amount ($)</label>
+                    <input type="number" id="adjustAmount" step="0.01" min="0.01" required style="width:100%; padding:10px; border:1px solid #cbd5e1; border-radius:6px;">
+                </div>
+                
+                <div id="adjustMsg" style="margin-bottom:15px; font-weight:500;"></div>
+                
+                <div style="display: flex; gap: 10px;">
+                    <button class="btn" onclick="adjustBalance('add')" style="flex: 1; background:#10b981;">Add Funds</button>
+                    <button class="btn" onclick="adjustBalance('deduct')" style="flex: 1; background:#ef4444;">Deduct Funds</button>
+                    <button class="btn" onclick="closeModal('balanceModal')" style="flex: 1; background: #94a3b8;">Cancel</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- User Management Modal -->
+        <div id="userModal" class="modal" style="display:none; position:fixed; z-index:1000; left:0; top:0; width:100%; height:100%; background-color:rgba(0,0,0,0.5); overflow-y:auto;">
+            <div class="modal-content" style="background-color:#fff; margin:5% auto; padding:30px; border-radius:12px; width:90%; max-width:600px; position:relative;">
+                <button onclick="closeModal('userModal')" style="position:absolute; right:20px; top:20px; background:none; border:none; font-size:1.5rem; cursor:pointer;">&times;</button>
+                
+                <h3 id="userModalTitle" style="margin-top:0; color:#1e1b4b; font-size:1.5rem;">Create User</h3>
+                <p style="color:#64748b; font-size:0.9rem; margin-bottom:20px;">Use this form to add or modify a system user.</p>
+                
+                <form id="userForm" onsubmit="handleUserSubmit(event)">
+                    <input type="hidden" id="editUserId">
+                    
+                    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:15px; margin-bottom:15px;">
+                        <div class="form-group">
+                            <label style="display:block; margin-bottom:5px; font-weight:600; font-size:0.9rem;">Full Name</label>
+                            <input type="text" id="userFullName" required style="width:100%; padding:10px; border:1px solid #cbd5e1; border-radius:6px;">
+                        </div>
+                        <div class="form-group">
+                            <label style="display:block; margin-bottom:5px; font-weight:600; font-size:0.9rem;">Email</label>
+                            <input type="email" id="userEmail" required style="width:100%; padding:10px; border:1px solid #cbd5e1; border-radius:6px;">
+                        </div>
+                    </div>
+
+                    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:15px; margin-bottom:15px;">
+                        <div class="form-group">
+                            <label style="display:block; margin-bottom:5px; font-weight:600; font-size:0.9rem;">Phone Number</label>
+                            <input type="text" id="userPhone" required style="width:100%; padding:10px; border:1px solid #cbd5e1; border-radius:6px;">
+                        </div>
+                        <div class="form-group">
+                            <label style="display:block; margin-bottom:5px; font-weight:600; font-size:0.9rem;">Role</label>
+                            <select id="userRole" onchange="toggleBusinessFields()" style="width:100%; padding:10px; border:1px solid #cbd5e1; border-radius:6px;">
+                                <option value="PERSONAL">PERSONAL</option>
+                                <option value="BUSINESS">BUSINESS</option>
+                                <option value="ADMIN">ADMIN</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:15px; margin-bottom:15px;">
+                        <div class="form-group">
+                            <label style="display:block; margin-bottom:5px; font-weight:600; font-size:0.9rem;">Security Question</label>
+                            <input type="text" id="userSecQ" required placeholder="e.g. Favorite Pet" style="width:100%; padding:10px; border:1px solid #cbd5e1; border-radius:6px;">
+                        </div>
+                        <div class="form-group">
+                            <label style="display:block; margin-bottom:5px; font-weight:600; font-size:0.9rem;">Security Answer</label>
+                            <input type="text" id="userSecA" required style="width:100%; padding:10px; border:1px solid #cbd5e1; border-radius:6px;">
+                        </div>
+                    </div>
+
+                    <div class="form-group" style="margin-bottom: 20px;">
+                        <label style="display:block; margin-bottom:5px; font-weight:600; font-size:0.9rem;" id="userPasswordLabel">Password</label>
+                        <input type="password" id="userPassword" placeholder="Required for new users" style="width:100%; padding:10px; border:1px solid #cbd5e1; border-radius:6px;">
+                        <small style="color:#64748b;">Leave blank when editing an existing user to keep their current password.</small>
+                    </div>
+
+                    <!-- Business Only Fields -->
+                    <div id="businessFields" style="display:none; background:#f8fafc; padding:15px; border-radius:8px; margin-bottom:20px; border:1px solid #e2e8f0;">
+                        <h4 style="margin-top:0; font-size:1rem; color:#334155; margin-bottom:15px;">Business Information</h4>
+                        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:15px; margin-bottom:15px;">
+                            <div class="form-group">
+                                <label style="display:block; margin-bottom:5px; font-weight:600; font-size:0.85rem;">Business Name</label>
+                                <input type="text" id="bizName" style="width:100%; padding:8px; border:1px solid #cbd5e1; border-radius:6px;">
+                            </div>
+                            <div class="form-group">
+                                <label style="display:block; margin-bottom:5px; font-weight:600; font-size:0.85rem;">Business Type</label>
+                                <input type="text" id="bizType" style="width:100%; padding:8px; border:1px solid #cbd5e1; border-radius:6px;">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label style="display:block; margin-bottom:5px; font-weight:600; font-size:0.85rem;">Tax ID (EIN)</label>
+                            <input type="text" id="bizTax" style="width:100%; padding:8px; border:1px solid #cbd5e1; border-radius:6px;">
+                        </div>
+                        <div class="form-group" style="margin-top:15px;">
+                            <label style="display:flex; align-items:center; gap:8px; font-weight:600; font-size:0.9rem; cursor:pointer;">
+                                <input type="checkbox" id="bizVerified" style="width:16px; height:16px;">
+                                Business Document Verified
+                            </label>
+                        </div>
+                    </div>
+
+                    <div id="userFormMsg" style="margin-bottom:15px; font-weight:500;"></div>
+                    
+                    <button type="submit" class="btn btn-primary" id="saveUserBtn" style="width:100%; padding:12px; font-size:1.1rem; border-radius:8px;">Save User Details</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div th:replace="~{fragments/layout :: footerFragment}"></div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            const userStr = sessionStorage.getItem('user');
+
+            if (!userStr || JSON.parse(userStr).role !== 'ADMIN') {
+                document.body.innerHTML = "<h2 style='text-align:center; padding: 50px; color:red;'>Access Denied. Admins Only.</h2>";
+                return;
+            }
+
+            try {
+                // Fetch metrics
+                const metricsRes = await fetchWithAuth('/api/admin/metrics');
+                if (metricsRes.ok) {
+                    const metrics = await metricsRes.json();
+                    document.getElementById('metricTotalUsers').innerText = metrics.totalUsers || 0;
+                    document.getElementById('metricTotalVolume').innerText = `$${(metrics.totalVolume || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+                    document.getElementById('metricTotalTx').innerText = metrics.totalTransactions || 0;
+
+                    const statusEl = document.getElementById('metricSystemStatus');
+                    statusEl.innerText = metrics.systemStatus || 'Unknown';
+                    statusEl.style.color = '#16a34a';
+                }
+
+                // Fetch users
+                const usersRes = await fetchWithAuth('/api/admin/users');
+                if (usersRes.ok) {
+                    const users = await usersRes.json();
+                    allUsersData = users; // Cache for modal use
+                    const tbody = document.getElementById('userTableBody');
+                    
+                    if (users.length === 0) {
+                        tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding: 20px;">No users found.</td></tr>';
+                    } else {
+                        tbody.innerHTML = '';
+                        users.forEach(u => {
+                            let roleColor = u.role === 'ADMIN' ? '#991b1b' : (u.role === 'BUSINESS' ? '#1d4ed8' : '#166534');
+                            let roleBg = u.role === 'ADMIN' ? '#fee2e2' : (u.role === 'BUSINESS' ? '#dbeafe' : '#dcfce7');
+
+                            tbody.innerHTML += `
+                                <tr style="border-bottom: 1px solid #f1f5f9;">
+                                    <td style="padding: 15px 10px; font-weight: 600; color: #64748b;">#${u.id}</td>
+                                    <td style="padding: 15px 10px; font-weight: 500;">${u.fullName || '-'}</td>
+                                    <td style="padding: 15px 10px; color: #475569;">${u.email}</td>
+                                    <td style="padding: 15px 10px;">
+                                        <span style="background: ${roleBg}; color: ${roleColor}; padding: 4px 10px; border-radius: 12px; font-size: 0.75rem; font-weight: 700; text-transform: uppercase;">
+                                            ${u.role}
+                                        </span>
+                                    </td>
+                                    <td style="padding: 15px 10px;">
+                                        <span style="color: #10b981; font-weight: 600; font-size: 0.85rem;">Active</span>
+                                    </td>
+                                    <td style="padding: 15px 10px;">
+                                        <button onclick="openUserModal(${u.id})" class="btn btn-sm" style="background:#3b82f6; font-size: 0.8rem; padding: 4px 8px; margin-right:5px;">Edit Profile</button>
+                                        <button onclick="openBalanceModal(${u.id}, '${u.fullName || u.email}')" class="btn btn-sm" style="font-size: 0.8rem; padding: 4px 8px;">Adjust Balance</button>
+                                    </td>
+                                </tr>
+                            `;
+                        });
+                    }
+                }
+
+                // Fetch Loans
+                const loansRes = await fetchWithAuth('/api/admin/loans');
+                if (loansRes.ok) {
+                    const loans = await loansRes.json();
+                    const tbody = document.getElementById('loanTableBody');
+                    if(loans.length === 0){
+                        tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding: 20px;">No loans found.</td></tr>';
+                    } else {
+                        tbody.innerHTML = '';
+                        loans.forEach(loan => {
+                            let statusColor = loan.status === 'PENDING' ? '#b45309' : (loan.status === 'APPROVED' ? '#166534' : '#991b1b');
+                            let statusBg = loan.status === 'PENDING' ? '#fef3c7' : (loan.status === 'APPROVED' ? '#dcfce7' : '#fee2e2');
+
+                            let actions = '';
+                            if (loan.status === 'PENDING') {
+                                actions = `
+                                    <button onclick="updateLoanStatus(${loan.id}, 'APPROVED')" class="btn btn-sm" style="background:#10b981; padding:4px 8px; font-size:0.75rem; margin-right:5px;">Approve</button>
+                                    <button onclick="updateLoanStatus(${loan.id}, 'REJECTED')" class="btn btn-sm" style="background:#ef4444; padding:4px 8px; font-size:0.75rem;">Reject</button>
+                                `;
+                            }
+
+                            tbody.innerHTML += `
+                                <tr style="border-bottom: 1px solid #f1f5f9;">
+                                    <td style="padding: 15px 10px; font-weight: 600; color: #64748b;">#${loan.id}</td>
+                                    <td style="padding: 15px 10px;">User #${loan.businessUserId}</td>
+                                    <td style="padding: 15px 10px; font-weight: 600;">$${loan.amount.toLocaleString(undefined, { minimumFractionDigits: 2 })}</td>
+                                    <td style="padding: 15px 10px; color: #475569;">${loan.purpose}</td>
+                                    <td style="padding: 15px 10px;">
+                                        <span style="background: ${statusBg}; color: ${statusColor}; padding: 4px 10px; border-radius: 12px; font-size: 0.75rem; font-weight: 700; text-transform: uppercase;">
+                                            ${loan.status}
+                                        </span>
+                                    </td>
+                                    <td style="padding: 15px 10px;">${actions}</td>
+                                </tr>
+                            `;
+                        });
+                    }
+                }
+
+            } catch (err) {
+                console.error("Failed to load admin dashboard", err);
+            }
+        });
+
+        let allUsersData = [];
+
+        // Modals & Actions
+        function openBalanceModal(userId, name) {
+            document.getElementById('adjustTargetId').value = userId;
+            document.getElementById('adjustTargetName').innerText = name;
+            document.getElementById('balanceModal').style.display = 'block';
+            document.getElementById('adjustMsg').innerText = '';
+        }
+
+        function closeModal(modalId) {
+            document.getElementById(modalId).style.display = 'none';
+        }
+
+        function toggleBusinessFields() {
+            const role = document.getElementById('userRole').value;
+            const biz = document.getElementById('businessFields');
+            biz.style.display = role === 'BUSINESS' ? 'block' : 'none';
+        }
+
+        function openUserModal(userId = null) {
+            const msgDiv = document.getElementById('userFormMsg');
+            msgDiv.innerText = '';
+            
+            if(userId) {
+                // Editing existing user
+                document.getElementById('userModalTitle').innerText = 'Edit User Profile';
+                const user = allUsersData.find(u => u.id === userId);
+                if(user) {
+                    document.getElementById('editUserId').value = user.id;
+                    document.getElementById('userFullName').value = user.fullName || '';
+                    document.getElementById('userEmail').value = user.email || '';
+                    document.getElementById('userPhone').value = user.phoneNumber || '';
+                    document.getElementById('userRole').value = user.role || 'PERSONAL';
+                    document.getElementById('userSecQ').value = user.securityQuestion || '';
+                    document.getElementById('userSecA').value = user.securityAnswer || ''; // We might not get this from the API, but fill if present.
+                    document.getElementById('userSecA').removeAttribute('required'); // Security Answer shouldn't be strictly required for updates
+                    
+                    document.getElementById('userPasswordLabel').innerText = 'Password (Optional)';
+                    document.getElementById('userPassword').placeholder = 'Leave blank to keep unchanged';
+                    document.getElementById('userPassword').removeAttribute('required');
+
+                    if(user.role === 'BUSINESS') {
+                        document.getElementById('bizName').value = user.businessName || '';
+                        document.getElementById('bizType').value = user.businessType || '';
+                        document.getElementById('bizTax').value = user.taxId || '';
+                        document.getElementById('bizVerified').checked = user.isBusinessVerified;
+                    }
+                }
+            } else {
+                // Creating new user
+                document.getElementById('userModalTitle').innerText = 'Create New User';
+                document.getElementById('userForm').reset();
+                document.getElementById('editUserId').value = '';
+                document.getElementById('userPasswordLabel').innerText = 'Password';
+                document.getElementById('userPassword').placeholder = 'Required for new users';
+                document.getElementById('userPassword').setAttribute('required', 'true');
+                document.getElementById('userSecA').setAttribute('required', 'true');
+            }
+            
+            toggleBusinessFields();
+            document.getElementById('userModal').style.display = 'block';
+        }
+
+        async function handleUserSubmit(e) {
+            e.preventDefault();
+            const msgDiv = document.getElementById('userFormMsg');
+            const btn = document.getElementById('saveUserBtn');
+
+            const userId = document.getElementById('editUserId').value;
+            const password = document.getElementById('userPassword').value;
+
+            const payload = {
+                user: {
+                    fullName: document.getElementById('userFullName').value,
+                    email: document.getElementById('userEmail').value,
+                    phoneNumber: document.getElementById('userPhone').value,
+                    role: document.getElementById('userRole').value,
+                    securityQuestion: document.getElementById('userSecQ').value,
+                    securityAnswer: document.getElementById('userSecA').value
+                },
+                role: document.getElementById('userRole').value
+            };
+
+            if(payload.role === 'BUSINESS') {
+                payload.user.businessName = document.getElementById('bizName').value;
+                payload.user.businessType = document.getElementById('bizType').value;
+                payload.user.taxId = document.getElementById('bizTax').value;
+                payload.user.isBusinessVerified = document.getElementById('bizVerified').checked;
+            }
+
+            // Only send password if provided (for edits) or required (for creations)
+            if(!userId || password.trim().length > 0) {
+                if(userId) {
+                    payload.newPassword = password;
+                } else {
+                    payload.password = password;
+                }
+            }
+            
+            btn.disabled = true;
+            btn.innerText = 'Saving...';
+
+            try {
+                const url = userId ? `/api/admin/users/${userId}` : '/api/admin/users';
+                const method = userId ? 'PUT' : 'POST';
+
+                const res = await fetchWithAuth(url, {
+                    method: method,
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                if (res.ok) {
+                    msgDiv.innerText = `User successfully ${userId ? 'updated' : 'created'}!`;
+                    msgDiv.style.color = "green";
+                    setTimeout(() => { closeModal('userModal'); location.reload(); }, 1500);
+                } else {
+                    const data = await res.json();
+                    msgDiv.innerText = data.message || `Failed to save user.`;
+                    msgDiv.style.color = "red";
+                }
+            } catch (err) {
+                msgDiv.innerText = "An error occurred connecting to the server.";
+                msgDiv.style.color = "red";
+            } finally {
+                btn.disabled = false;
+                btn.innerText = 'Save User Details';
+            }
+        }
+
+        async function adjustBalance(action) {
+            const userId = document.getElementById('adjustTargetId').value;
+            const amount = parseFloat(document.getElementById('adjustAmount').value);
+            const msgDiv = document.getElementById('adjustMsg');
+
+            if (!amount || amount <= 0) {
+                msgDiv.innerText = "Please enter a valid amount > 0";
+                msgDiv.style.color = "red";
+                return;
+            }
+
+            try {
+                const res = await fetchWithAuth(`/api/admin/users/${userId}/balance/${action}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ amount: amount })
+                });
+
+                if (res.ok) {
+                    msgDiv.innerText = `Successfully ${action === 'add' ? 'added to' : 'deducted from'} user wallet.`;
+                    msgDiv.style.color = "green";
+                    setTimeout(() => { closeBalanceModal(); location.reload(); }, 1500);
+                } else {
+                    const data = await res.json();
+                    msgDiv.innerText = data.message || `Failed to ${action} balance.`;
+                    msgDiv.style.color = "red";
+                }
+            } catch (e) {
+                msgDiv.innerText = "An error occurred.";
+                msgDiv.style.color = "red";
+            }
+        }
+
+        async function updateLoanStatus(loanId, status) {
+            if (!confirm(`Are you sure you want to ${status.toLowerCase()} this loan?`)) return;
+
+            try {
+                const res = await fetchWithAuth(`/api/admin/loans/${loanId}/status`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ status: status })
+                });
+
+                if (res.ok) {
+                    alert(`Loan ${status}!`);
+                    location.reload(); // Quick refresh to update tables
+                } else {
+                    const data = await res.json();
+                    alert(data.message || "Failed to update loan status.");
+                }
+            } catch (e) {
+                alert("An error occurred.");
+            }
+        }
+    </script>
+</body>
+
+</html>

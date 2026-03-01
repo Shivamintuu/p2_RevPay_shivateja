@@ -8,5 +8,7 @@ public interface IWalletService {
     WalletDTO getWalletByUserId(Long userId);
     WalletDTO addFunds(Long userId, BigDecimal amount, Long paymentMethodId);
     WalletDTO withdrawFunds(Long userId, BigDecimal amount, Long paymentMethodId);
+    WalletDTO adminAddFunds(Long userId, BigDecimal amount);
+    WalletDTO adminDeductFunds(Long userId, BigDecimal amount);
     boolean hasSufficientBalance(Long userId, BigDecimal amount);
 }

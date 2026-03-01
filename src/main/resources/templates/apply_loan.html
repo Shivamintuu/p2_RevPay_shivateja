@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <div th:replace="~{fragments/layout :: headFragment('Apply for Business Loan - RevPay')}"></div>
+</head>
+
+<body>
+    <div th:replace="~{fragments/layout :: headerFragment}"></div>
+
+    <div class="main-content">
+        <h2>Apply for a Business Loan</h2>
+
+        <div style="display: flex; flex-wrap: wrap; gap: 20px;">
+            <!-- Application Form -->
+            <div class="card" style="flex: 1; min-width: 300px;">
+                <h3>Loan Application</h3>
+                <form id="loanForm" onsubmit="event.preventDefault(); applyForLoan();">
+                    <div class="form-group">
+                        <label for="loanAmount">Requested Amount ($)</label>
+                        <input type="number" id="loanAmount" min="1000" step="100" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="loanTenure">Tenure (Months)</label>
+                        <select id="loanTenure" required>
+                            <option value="6">6 Months</option>
+                            <option value="12">12 Months</option>
+                            <option value="24">24 Months</option>
+                            <option value="36">36 Months</option>
+                            <option value="48">48 Months</option>
+                            <option value="60">60 Months</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="loanPurpose">Purpose of Loan</label>
+                        <textarea id="loanPurpose" rows="3" required
+                            style="width: 100%; border: 1px solid #cbd5e1; border-radius: 6px; padding: 8px;"></textarea>
+                    </div>
+                    <div class="form-group" style="background: #f1f5f9; padding: 15px; border-radius: 6px;">
+                        <label>Supporting Documents</label>
+                        <input type="file" id="loanDocs" accept=".pdf,.png,.jpg">
+                        <small style="display: block; margin-top: 5px; color: #64748b;">(Upload simulated for MVP. No
+                            actual file processing.)</small>
+                    </div>
+
+                    <div id="loanMsg" style="margin-bottom: 15px; font-weight: 500;"></div>
+                    <button type="submit" class="btn" style="width: 100%;">Submit Application</button>
+                    <a href="/loan/status" class="btn"
+                        style="display: block; text-align: center; margin-top: 10px; background: var(--text-secondary);">View
+                        Existing Applications</a>
+                </form>
+            </div>
+
+            <!-- Loan Simulator -->
+            <div class="card" style="flex: 1; min-width: 300px; background: #f8fafc; border: 1px solid #e2e8f0;">
+                <h3>Loan Simulator</h3>
+                <p style="color: #64748b; font-size: 0.9rem; margin-bottom: 20px;">Estimate your monthly EMI. Interest
+                    rate is currently set at 9.5% per annum.</p>
+                <form id="simulateForm" onsubmit="event.preventDefault(); simulateLoan();">
+                    <div class="form-group">
+                        <label>Principal Amount ($)</label>
+                        <input type="number" id="simAmount" value="10000" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Tenure (Months)</label>
+                        <input type="number" id="simTenure" value="24" required>
+                    </div>
+                    <button type="submit" class="btn" style="background: #64748b; width: 100%;">Simulate EMI</button>
+                </form>
+
+                <div id="simResults"
+                    style="display:none; margin-top: 25px; padding: 15px; background: #fff; border-radius: 6px; border: 1px solid #e2e8f0;">
+                    <h4 style="margin-top: 0; color: var(--primary-color);">Simulation Results</h4>
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                        <span>Monthly EMI:</span> <strong id="resEmi"></strong>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                        <span>Total Interest:</span> <strong id="resInterest" style="color: #dc2626;"></strong>
+                    </div>
+                    <div
+                        style="display: flex; justify-content: space-between; margin-bottom: 8px; border-top: 1px solid #e2e8f0; padding-top: 8px;">
+                        <span>Total Payment:</span> <strong id="resTotal"></strong>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div th:replace="~{fragments/layout :: footerFragment}"></div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const userStr = sessionStorage.getItem('user');
+            if (!userStr || JSON.parse(userStr).role !== 'BUSINESS') {
+                window.location.href = '/dashboard';
+            }
+        });
+
+        async function applyForLoan() {
+            const btn = document.querySelector('#loanForm button[type="submit"]');
+            const msg = document.getElementById('loanMsg');
+            const user = JSON.parse(sessionStorage.getItem('user'));
+
+            const payload = {
+                amount: parseFloat(document.getElementById('loanAmount').value),
+                tenureMonths: parseInt(document.getElementById('loanTenure').value),
+                purpose: document.getElementById('loanPurpose').value
+            };
+
+            setButtonLoading(btn, true, 'Submitting Application...');
+            try {
+                const res = await fetchWithAuth(`/api/loans/business/${user.id}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                if (res.ok) {
+                    msg.innerText = "Loan Application Submitted Successfully! Redirecting...";
+                    msg.style.color = 'green';
+                    setTimeout(() => window.location.href = '/loan/status', 2000);
+                } else {
+                    const data = await res.json();
+                    throw new Error(data.message || "Failed to submit loan application");
+                }
+            } catch (err) {
+                msg.innerText = err.message;
+                msg.style.color = 'red';
+                setButtonLoading(btn, false);
+            }
+        }
+
+        async function simulateLoan() {
+            const principal = document.getElementById('simAmount').value;
+            const tenure = document.getElementById('simTenure').value;
+
+            try {
+                const res = await fetchWithAuth(`/api/loans/simulate?principal=${principal}&tenureMonths=${tenure}&interestRate=9.5`);
+                if (res.ok) {
+                    const data = await res.json();
+                    document.getElementById('simResults').style.display = 'block';
+                    document.getElementById('resEmi').innerText = `$${data.monthlyEMI.toFixed(2)}`;
+                    document.getElementById('resInterest').innerText = `$${data.totalInterest.toFixed(2)}`;
+                    document.getElementById('resTotal').innerText = `$${data.totalPayment.toFixed(2)}`;
+                } else {
+                    alert("Simulation failed.");
+                }
+            } catch (err) {
+                console.error(err);
+            }
+        }
+    </script>
+</body>
+
+</html>

@@ -28,9 +28,9 @@ public class TransactionRestController {
 
     @PostMapping("/send")
     public ResponseEntity<TransactionDTO> sendMoney(@RequestBody SendMoneyRequest request) {
-        UserDTO recipient = userService.getUserByEmail(request.getRecipientEmail());
+        UserDTO recipient = userService.getUserByIdentifier(request.getRecipientIdentifier());
         if (recipient == null) {
-            throw new IllegalArgumentException("Recipient with email " + request.getRecipientEmail() + " not found");
+            throw new IllegalArgumentException("Recipient with identifier " + request.getRecipientIdentifier() + " not found");
         }
 
         TransactionDTO transaction = transactionService.sendMoney(
@@ -66,18 +66,26 @@ public class TransactionRestController {
                 userId, type, startDate, endDate, minAmount, maxAmount, status));
     }
 
+    @GetMapping(value = "/user/{userId}/export/csv", produces = "text/csv")
+    public ResponseEntity<byte[]> exportTransactionsToCsv(@PathVariable Long userId) {
+        byte[] csvData = transactionService.exportTransactionsToCSV(userId);
+        return ResponseEntity.ok()
+                .header("Content-Disposition", "attachment; filename=transactions.csv")
+                .body(csvData);
+    }
+
     // Inner DTO specifically for endpoint requests
     public static class SendMoneyRequest {
         private Long senderId;
-        private String recipientEmail;
+        private String recipientIdentifier;
         private BigDecimal amount;
         private String description;
         private String transactionPin;
 
         public Long getSenderId() { return senderId; }
         public void setSenderId(Long senderId) { this.senderId = senderId; }
-        public String getRecipientEmail() { return recipientEmail; }
-        public void setRecipientEmail(String recipientEmail) { this.recipientEmail = recipientEmail; }
+        public String getRecipientIdentifier() { return recipientIdentifier; }
+        public void setRecipientIdentifier(String recipientIdentifier) { this.recipientIdentifier = recipientIdentifier; }
         public BigDecimal getAmount() { return amount; }
         public void setAmount(BigDecimal amount) { this.amount = amount; }
         public String getDescription() { return description; }

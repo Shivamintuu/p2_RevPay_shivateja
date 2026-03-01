@@ -32,6 +32,11 @@ public class UserRestController {
         return ResponseEntity.ok(userService.getUserByEmail(email));
     }
 
+    @GetMapping("/identifier")
+    public ResponseEntity<UserDTO> getUserByIdentifier(@RequestParam String identifier) {
+        return ResponseEntity.ok(userService.getUserByIdentifier(identifier));
+    }
+
     @GetMapping
     public ResponseEntity<List<UserDTO>> getAllUsers() {
         return ResponseEntity.ok(userService.getAllUsers());
@@ -58,5 +63,13 @@ public class UserRestController {
     public ResponseEntity<Void> updateTransactionPin(@PathVariable Long id, @RequestBody Map<String, String> request) {
         userService.updateTransactionPin(id, request.get("newPin"));
         return ResponseEntity.ok().build();
+    }
+
+    @PutMapping("/{id}/preferences")
+    public ResponseEntity<UserDTO> updateNotificationPreferences(@PathVariable Long id, @RequestBody Map<String, Boolean> prefs) {
+        boolean transactionAlerts = prefs.getOrDefault("transactionAlerts", true);
+        boolean securityAlerts = prefs.getOrDefault("securityAlerts", true);
+        
+        return ResponseEntity.ok(userService.updateNotificationPreferences(id, transactionAlerts, securityAlerts));
     }
 }

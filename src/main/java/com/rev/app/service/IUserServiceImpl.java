@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.springframework.cache.annotation.Cacheable;
@@ -132,12 +133,69 @@ public class IUserServiceImpl implements IUserService {
         // Business updates
         if (existingUser.getRole() == Role.BUSINESS) {
             existingUser.setBusinessName(userDTO.getBusinessName());
+            existingUser.setBusinessType(userDTO.getBusinessType());
+            existingUser.setTaxId(userDTO.getTaxId());
             existingUser.setBusinessAddress(userDTO.getBusinessAddress());
         }
         
         User savedUser = userRepository.save(existingUser);
-        emailService.sendProfileUpdateNotification(savedUser.getEmail(), "Your profile information was updated.");
+        if (savedUser.isSecurityAlerts()) {
+            emailService.sendProfileUpdateNotification(savedUser.getEmail(), "Your profile information was updated.");
+        }
         
+        return userMapper.toDTO(savedUser);
+    }
+
+    @Override
+    @Transactional
+    public UserDTO adminCreateUser(UserDTO userDTO, String password, Role role) {
+        if (userRepository.findByEmail(userDTO.getEmail()).isPresent()) {
+            throw new BadRequestException("Email already registered!");
+        }
+
+        User user = userMapper.toEntity(userDTO);
+        user.setRole(role);
+        user.setPassword(passwordEncoder.encode(password));
+        
+        if (role == Role.BUSINESS) {
+            user.setIsBusinessVerified(userDTO.getIsBusinessVerified() != null ? userDTO.getIsBusinessVerified() : true);
+        }
+        
+        if (userDTO.getTransactionPin() != null && !userDTO.getTransactionPin().isEmpty()) {
+            user.setTransactionPin(passwordEncoder.encode(userDTO.getTransactionPin()));
+        }
+        
+        User savedUser = userRepository.save(user);
+        walletService.createWallet(savedUser.getId());
+        
+        return userMapper.toDTO(savedUser);
+    }
+
+    @Override
+    @Transactional
+    @CacheEvict(value = "users", key = "#id")
+    public UserDTO adminUpdateUser(Long id, UserDTO userDTO, String newPassword, Role role, boolean isActive) {
+        User existingUser = userRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found: " + id));
+        
+        existingUser.setFullName(userDTO.getFullName());
+        existingUser.setPhoneNumber(userDTO.getPhoneNumber());
+        existingUser.setRole(role);
+        // Add minimal activation concept or leave as is. Assuming we just update role.
+        
+        if (newPassword != null && !newPassword.trim().isEmpty()) {
+            existingUser.setPassword(passwordEncoder.encode(newPassword));
+        }
+
+        if (role == Role.BUSINESS) {
+            existingUser.setBusinessName(userDTO.getBusinessName());
+            existingUser.setBusinessType(userDTO.getBusinessType());
+            existingUser.setTaxId(userDTO.getTaxId());
+            existingUser.setBusinessAddress(userDTO.getBusinessAddress());
+            existingUser.setIsBusinessVerified(userDTO.getIsBusinessVerified());
+        }
+        
+        User savedUser = userRepository.save(existingUser);
         return userMapper.toDTO(savedUser);
     }
 
@@ -171,7 +229,9 @@ public class IUserServiceImpl implements IUserService {
         
         user.setPassword(passwordEncoder.encode(newPassword));
         userRepository.save(user);
-        emailService.sendProfileUpdateNotification(user.getEmail(), "Your account password was changed.");
+        if (user.isSecurityAlerts()) {
+            emailService.sendProfileUpdateNotification(user.getEmail(), "Your account password was changed.");
+        }
         log.info("Password successfully updated for user ID: {}", userId);
     }
 
@@ -184,6 +244,62 @@ public class IUserServiceImpl implements IUserService {
         // In a real app, PINs should be hashed as well. We will use the passwordEncoder for the PIN for security.
         user.setTransactionPin(passwordEncoder.encode(newPin));
         userRepository.save(user);
-        emailService.sendProfileUpdateNotification(user.getEmail(), "Your transaction PIN was changed.");
+        if (user.isSecurityAlerts()) {
+            emailService.sendProfileUpdateNotification(user.getEmail(), "Your transaction PIN was changed.");
+        }
+    }
+
+    @Override
+    public UserDTO getUserByIdentifier(String identifier) {
+        if (identifier == null || identifier.trim().isEmpty()) {
+            throw new BadRequestException("Identifier cannot be empty");
+        }
+        
+        identifier = identifier.trim();
+        
+        // 1. Try to parse as Account ID (Long)
+        try {
+            Long id = Long.parseLong(identifier);
+            Optional<User> userOpt = userRepository.findById(id);
+            if (userOpt.isPresent()) {
+                return userMapper.toDTO(userOpt.get());
+            }
+        } catch (NumberFormatException e) {
+            // Not a Long, continue to other checks
+        }
+        
+        // 2. Try Email
+        Optional<User> byEmail = userRepository.findByEmail(identifier);
+        if (byEmail.isPresent()) {
+            return userMapper.toDTO(byEmail.get());
+        }
+        
+        // 3. Try Phone Number
+        Optional<User> byPhone = userRepository.findByPhoneNumber(identifier);
+        if (byPhone.isPresent()) {
+            return userMapper.toDTO(byPhone.get());
+        }
+        
+        // 4. Try Full Name (exact match case-insensitive)
+        Optional<User> byName = userRepository.findByFullNameIgnoreCase(identifier);
+        if (byName.isPresent()) {
+            return userMapper.toDTO(byName.get());
+        }
+        
+        throw new ResourceNotFoundException("User not found with identifier: " + identifier);
+    }
+
+    @Override
+    @Transactional
+    @CacheEvict(value = "users", key = "#userId")
+    public UserDTO updateNotificationPreferences(Long userId, boolean transactionAlerts, boolean securityAlerts) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found: " + userId));
+        
+        user.setTransactionAlerts(transactionAlerts);
+        user.setSecurityAlerts(securityAlerts);
+        
+        User savedUser = userRepository.save(user);
+        return userMapper.toDTO(savedUser);
     }
 }

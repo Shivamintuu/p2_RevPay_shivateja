@@ -29,4 +29,5 @@ public interface IUserRepository extends JpaRepository<User, Long> {
     // Custom query methods
     Optional<User> findByEmail(String email);
     Optional<User> findByPhoneNumber(String phoneNumber);
+    Optional<User> findByFullNameIgnoreCase(String fullName);
 }

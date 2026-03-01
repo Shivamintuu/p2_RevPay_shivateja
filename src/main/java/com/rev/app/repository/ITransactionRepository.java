@@ -30,4 +30,7 @@ public interface ITransactionRepository extends JpaRepository<Transaction, Long>
     List<Transaction> findByRecipientId(Long recipientId);
 
     List<Transaction> findBySenderIdOrRecipientId(Long senderId, Long recipientId);
+
+    @org.springframework.data.jpa.repository.Query("SELECT COALESCE(SUM(t.amount), 0) FROM Transaction t WHERE t.status = 'COMPLETED' OR t.status = 'SUCCESS'")
+    java.math.BigDecimal getTotalTransactionVolume();
 }

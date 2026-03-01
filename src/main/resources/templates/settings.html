@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <div th:replace="~{fragments/layout :: headFragment('Settings - RevPay')}"></div>
+</head>
+
+<body>
+    <div th:replace="~{fragments/layout :: headerFragment}"></div>
+
+    <div class="main-content">
+        <h2>Account Settings</h2>
+
+        <!-- Profile Update Section -->
+        <div class="card" style="max-width: 600px; margin-bottom: 20px;">
+            <h3>Profile Information</h3>
+            <form id="profileForm" onsubmit="event.preventDefault(); updateProfile();">
+                <div class="form-group">
+                    <label for="profFullName">Full Name</label>
+                    <input type="text" id="profFullName" required>
+                </div>
+                <div class="form-group">
+                    <label for="profPhone">Phone Number</label>
+                    <input type="text" id="profPhone" required>
+                </div>
+                <div class="form-group">
+                    <label for="profSecurityQuestion">Security Question</label>
+                    <input type="text" id="profSecurityQuestion" required disabled
+                        style="background: #f1f5f9; cursor: not-allowed;">
+                    <small>Security Question cannot be changed for security reasons.</small>
+                </div>
+
+                <!-- Business Specific Updates -->
+                <div id="businessUpdateFields"
+                    style="display:none; padding-top: 15px; border-top: 1px solid #e2e8f0; margin-top: 15px;">
+                    <h4>Business Details</h4>
+                    <div class="form-group">
+                        <label for="profBusinessName">Business Name</label>
+                        <input type="text" id="profBusinessName">
+                    </div>
+                    <div class="form-group">
+                        <label for="profBusinessType">Business Type</label>
+                        <input type="text" id="profBusinessType">
+                    </div>
+                    <div class="form-group">
+                        <label for="profTaxId">Tax ID</label>
+                        <input type="text" id="profTaxId">
+                    </div>
+                    <div class="form-group">
+                        <label for="profBusinessAddress">Business Address</label>
+                        <textarea id="profBusinessAddress" rows="2"
+                            style="width: 100%; border: 1px solid #e2e8f0; border-radius: 6px; padding: 10px; font-family: inherit;"></textarea>
+                    </div>
+                </div>
+
+                <div id="profileMsg" style="margin-bottom: 10px;"></div>
+                <button type="submit" class="btn">Update Profile</button>
+            </form>
+        </div>
+
+        <div class="card" style="max-width: 600px; margin-bottom: 20px;">
+            <h3>Change Password</h3>
+            <form id="passwordForm" onsubmit="event.preventDefault(); updatePassword();">
+                <div class="form-group">
+                    <label for="currentPassword">Current Password</label>
+                    <input type="password" id="currentPassword" required>
+                </div>
+                <div class="form-group">
+                    <label for="newPassword">New Password</label>
+                    <input type="password" id="newPassword" required>
+                </div>
+                <div id="passMsg" style="margin-bottom: 10px;"></div>
+                <button type="submit" class="btn">Update Password</button>
+            </form>
+        </div>
+
+        <div class="card" style="max-width: 500px;">
+            <h3>Transaction PIN</h3>
+            <form id="pinForm" onsubmit="event.preventDefault(); updatePin();">
+                <div class="form-group">
+                    <label for="newPin">Set/Update 6-digit PIN</label>
+                    <input type="password" id="newPin" required maxlength="6" pattern="\d{6}">
+                </div>
+                <div id="pinMsg" style="margin-bottom: 10px;"></div>
+                <button type="submit" class="btn">Update PIN</button>
+            </form>
+        </div>
+    </div>
+
+    <div th:replace="~{fragments/layout :: footerFragment}"></div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            const userStr = sessionStorage.getItem('user');
+            if (userStr) {
+                const user = JSON.parse(userStr);
+                document.getElementById('profFullName').value = user.fullName || '';
+                document.getElementById('profPhone').value = user.phoneNumber || '';
+                document.getElementById('profSecurityQuestion').value = user.securityQuestion || '';
+
+                if (user.role === 'BUSINESS') {
+                    document.getElementById('businessUpdateFields').style.display = 'block';
+                    document.getElementById('profBusinessName').value = user.businessName || '';
+                    document.getElementById('profBusinessType').value = user.businessType || '';
+                    document.getElementById('profTaxId').value = user.taxId || '';
+                    document.getElementById('profBusinessAddress').value = user.businessAddress || '';
+
+                    document.getElementById('profBusinessName').required = true;
+                    document.getElementById('profTaxId').required = true;
+                }
+            }
+        });
+
+        async function updateProfile() {
+            const msg = document.getElementById('profileMsg');
+            const btn = document.querySelector('#profileForm button[type="submit"]');
+            const userStr = sessionStorage.getItem('user');
+            if (!userStr) return;
+            let user = JSON.parse(userStr);
+
+            user.fullName = document.getElementById('profFullName').value;
+            user.phoneNumber = document.getElementById('profPhone').value;
+
+            if (user.role === 'BUSINESS') {
+                user.businessName = document.getElementById('profBusinessName').value;
+                user.businessType = document.getElementById('profBusinessType').value;
+                user.taxId = document.getElementById('profTaxId').value;
+                user.businessAddress = document.getElementById('profBusinessAddress').value;
+            }
+
+            setButtonLoading(btn, true, 'Updating Profile...');
+            try {
+                const response = await fetchWithAuth(`/api/users/${user.id}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(user)
+                });
+
+                if (response.ok) {
+                    const updatedUser = await response.json();
+                    sessionStorage.setItem('user', JSON.stringify(updatedUser));
+                    msg.innerText = "Profile updated successfully!";
+                    msg.style.color = 'green';
+                } else {
+                    const data = await response.json();
+                    throw new Error(data.message || "Failed to update profile");
+                }
+            } catch (err) {
+                msg.innerText = err.message;
+                msg.style.color = 'red';
+            } finally {
+                setButtonLoading(btn, false);
+            }
+        }
+
+        async function updatePassword() {
+            const currentPassword = document.getElementById('currentPassword').value;
+            const newPassword = document.getElementById('newPassword').value;
+            const msg = document.getElementById('passMsg');
+            const btn = document.querySelector('#passwordForm button[type="submit"]');
+            const userId = sessionStorage.getItem('userId') || (sessionStorage.getItem('user') ? JSON.parse(sessionStorage.getItem('user')).id : null);
+
+            setButtonLoading(btn, true, 'Updating Password...');
+            try {
+                const response = await fetch(`/api/users/${userId}/password`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer ' + sessionStorage.getItem('token')
+                    },
+                    body: JSON.stringify({ currentPassword, newPassword })
+                });
+
+                if (response.ok) {
+                    msg.innerText = "Password updated successfully!";
+                    msg.style.color = 'green';
+                    document.getElementById('passwordForm').reset();
+                } else {
+                    const data = await response.json();
+                    throw new Error(data.message || "Failed to update password");
+                }
+            } catch (err) {
+                msg.innerText = err.message;
+                msg.style.color = 'red';
+            } finally {
+                setButtonLoading(btn, false);
+            }
+        }
+
+        async function updatePin() {
+            const newPin = document.getElementById('newPin').value;
+            const msg = document.getElementById('pinMsg');
+            const btn = document.querySelector('#pinForm button[type="submit"]');
+            const userId = sessionStorage.getItem('userId') || (sessionStorage.getItem('user') ? JSON.parse(sessionStorage.getItem('user')).id : null);
+
+            setButtonLoading(btn, true, 'Updating PIN...');
+            try {
+                const response = await fetch(`/api/users/${userId}/pin`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer ' + sessionStorage.getItem('token')
+                    },
+                    body: JSON.stringify({ newPin: newPin })
+                });
+
+                if (response.ok) {
+                    msg.innerText = "PIN updated successfully!";
+                    msg.style.color = 'green';
+                    document.getElementById('pinForm').reset();
+                } else {
+                    const data = await response.json();
+                    throw new Error(data.message || "Failed to update PIN");
+                }
+            } catch (err) {
+                msg.innerText = err.message;
+                msg.style.color = 'red';
+            } finally {
+                setButtonLoading(btn, false);
+            }
+        }
+    </script>
+</body>
+
+</html>

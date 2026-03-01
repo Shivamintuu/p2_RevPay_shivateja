@@ -78,6 +78,13 @@ public class ILoanApplicationServiceImpl implements ILoanApplicationService {
     }
 
     @Override
+    public List<LoanApplicationDTO> getAllLoanApplications() {
+        return loanApplicationRepository.findAll().stream()
+                .map(loanApplicationMapper::toDTO)
+                .collect(Collectors.toList());
+    }
+
+    @Override
     @Transactional
     public LoanApplicationDTO updateLoanStatus(Long id, LoanStatus status) {
         LoanApplication loan = loanApplicationRepository.findById(id)

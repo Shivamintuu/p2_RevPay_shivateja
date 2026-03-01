@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <div th:replace="~{fragments/layout :: headFragment('Send Money - RevPay')}"></div>
+</head>
+
+<body>
+    <div th:replace="~{fragments/layout :: headerFragment}"></div>
+
+    <div class="main-content">
+        <h2 style="margin-bottom: 25px; font-weight: 700; color: #1e1b4b;">Send Money</h2>
+        <div class="card" style="max-width: 540px;">
+
+            <!-- Payment Method Selector -->
+            <div class="form-group" id="paymentMethodGroup">
+                <label for="paymentMethodSelect" style="font-weight: 600;">Pay With</label>
+                <select id="paymentMethodSelect" required style="width:100%; padding:10px; border:1px solid #cbd5e1; border-radius:6px; font-size:0.95rem; background:#fff;">
+                    <option value="" disabled selected>Loading your cards...</option>
+                </select>
+                <small style="color:#64748b;">Select the debit or credit card to send from.</small>
+            </div>
+
+            <hr style="border:none; border-top:1px solid #e2e8f0; margin: 5px 0 20px 0;">
+
+            <form id="sendMoneyForm" onsubmit="event.preventDefault(); handleSendMoney();">
+                <div class="form-group">
+                    <label for="recipientIdentifier">Recipient (Email, Phone, or ID)</label>
+                    <input type="text" id="recipientIdentifier" required placeholder="Enter recipient's identifier">
+                </div>
+                <div class="form-group">
+                    <label for="amount">Amount ($)</label>
+                    <input type="number" id="amount" step="0.01" min="0.01" required placeholder="0.00">
+                </div>
+                <div class="form-group">
+                    <label for="description">Description (Optional)</label>
+                    <input type="text" id="description" placeholder="What is this for?">
+                </div>
+                <div class="form-group">
+                    <label for="pin">Transaction PIN</label>
+                    <input type="password" id="pin" required maxlength="6" placeholder="Enter 6-digit PIN">
+                </div>
+
+                <div id="errorMessage" class="error" style="display:none; margin-bottom: 10px;"></div>
+                <div id="successMessage" style="color: green; font-weight: 600; display:none; margin-bottom: 10px;"></div>
+
+                <button type="submit" class="btn" style="width: 100%; padding: 12px; font-size: 1rem;">
+                    ↗ Send Money
+                </button>
+            </form>
+        </div>
+
+        <!-- No Cards Warning -->
+        <div id="noCardsWarning" class="card" style="max-width: 540px; margin-top: 15px; display: none; border-left: 4px solid #f59e0b; background: #fffbeb; padding: 15px 20px;">
+            <p style="margin: 0; font-weight: 600; color: #92400e;">⚠ No Payment Methods Found</p>
+            <p style="margin: 8px 0 0 0; color: #78350f; font-size: 0.9rem;">Please <a href="/payment-method/manage" style="color: #d97706; font-weight: 700;">add a debit or credit card</a> before sending money.</p>
+        </div>
+    </div>
+
+    <div th:replace="~{fragments/layout :: footerFragment}"></div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            const userId = sessionStorage.getItem('userId');
+            if (!userId) return;
+
+            const select = document.getElementById('paymentMethodSelect');
+            const noCardsWarning = document.getElementById('noCardsWarning');
+
+            try {
+                const res = await fetchWithAuth(`/api/payment-methods/user/${userId}`);
+                if (res.ok) {
+                    const methods = await res.json();
+                    select.innerHTML = '';
+
+                    const cards = methods.filter(m => m.type === 'DEBIT_CARD' || m.type === 'CREDIT_CARD');
+
+                    if (cards.length === 0) {
+                        select.innerHTML = '<option value="" disabled selected>No cards available</option>';
+                        select.disabled = true;
+                        noCardsWarning.style.display = 'block';
+                        document.querySelector('#sendMoneyForm button[type="submit"]').disabled = true;
+                    } else {
+                        select.innerHTML = '<option value="" disabled selected>-- Select a card --</option>';
+                        cards.forEach(m => {
+                            const last4 = m.accountNumberMasked ? m.accountNumberMasked.slice(-4) : '****';
+                            const typeLabel = m.type === 'CREDIT_CARD' ? '💳 Credit' : '💰 Debit';
+                            const defLabel = m.default ? ' (Default)' : '';
+                            const opt = document.createElement('option');
+                            opt.value = m.id;
+                            opt.textContent = `${typeLabel} Card •••• ${last4}${defLabel}`;
+                            if (m.default) opt.selected = true;
+                            select.appendChild(opt);
+                        });
+                    }
+                }
+            } catch (e) {
+                select.innerHTML = '<option value="" disabled selected>Failed to load cards</option>';
+                console.error('Error loading payment methods', e);
+            }
+        });
+
+        async function handleSendMoney() {
+            const btn = document.querySelector('#sendMoneyForm button[type="submit"]');
+            setButtonLoading(btn, true, 'Sending...');
+
+            const selectedCard = document.getElementById('paymentMethodSelect').value;
+            if (!selectedCard) {
+                document.getElementById('errorMessage').innerText = 'Please select a payment card.';
+                document.getElementById('errorMessage').style.display = 'block';
+                setButtonLoading(btn, false);
+                return;
+            }
+
+            const payload = {
+                senderId: parseInt(sessionStorage.getItem('userId')),
+                recipientIdentifier: document.getElementById('recipientIdentifier').value,
+                amount: parseFloat(document.getElementById('amount').value),
+                description: document.getElementById('description').value,
+                transactionPin: document.getElementById('pin').value,
+                paymentMethodId: parseInt(selectedCard)
+            };
+
+            const errorDiv = document.getElementById('errorMessage');
+            const successDiv = document.getElementById('successMessage');
+
+            try {
+                const response = await fetch('/api/transactions/send', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer ' + sessionStorage.getItem('token')
+                    },
+                    body: JSON.stringify(payload)
+                });
+
+                if (response.ok) {
+                    successDiv.innerText = "✅ Transaction successful! A notification has been sent.";
+                    successDiv.style.display = 'block';
+                    errorDiv.style.display = 'none';
+                    document.getElementById('sendMoneyForm').reset();
+                } else {
+                    const data = await response.json();
+                    throw new Error(data.message || "Transaction failed");
+                }
+            } catch (err) {
+                errorDiv.innerText = err.message;
+                errorDiv.style.display = 'block';
+                successDiv.style.display = 'none';
+            } finally {
+                setButtonLoading(btn, false);
+            }
+        }
+    </script>
+</body>
+
+</html>

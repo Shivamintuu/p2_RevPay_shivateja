@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <div th:replace="~{fragments/layout :: headFragment('Money Requests - RevPay')}"></div>
+    <style>
+        .request-card {
+            padding: 15px;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            background: #fff;
+        }
+
+        .request-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .req-status-pending {
+            color: #b45309;
+            background: #fef3c7;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            font-weight: bold;
+        }
+
+        .req-status-accepted {
+            color: #166534;
+            background: #dcfce7;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            font-weight: bold;
+        }
+
+        .req-status-declined,
+        .req-status-cancelled {
+            color: #991b1b;
+            background: #fee2e2;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            font-weight: bold;
+        }
+
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+        }
+
+        .modal-content {
+            background-color: #fff;
+            margin: 15% auto;
+            padding: 20px;
+            border-radius: 8px;
+            width: 90%;
+            max-width: 400px;
+        }
+    </style>
+</head>
+
+<body>
+    <div th:replace="~{fragments/layout :: headerFragment}"></div>
+
+    <div class="main-content">
+        <h2>Money Requests</h2>
+
+        <div style="display: flex; flex-wrap: wrap; gap: 20px;">
+            <!-- Send Request Form -->
+            <div class="card" style="flex: 1; min-width: 300px; max-width: 400px; align-self: flex-start;">
+                <h3>Request Money</h3>
+                <form id="reqForm" onsubmit="event.preventDefault(); sendRequest();">
+                    <div class="form-group">
+                        <label>Requestee Email or Phone</label>
+                        <input type="text" id="reqIdentifier" placeholder="Email or Phone Number" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Amount ($)</label>
+                        <input type="number" id="reqAmount" step="0.01" min="0.01" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Purpose</label>
+                        <textarea id="reqPurpose" rows="2"
+                            style="width: 100%; border: 1px solid #cbd5e1; border-radius: 6px; padding: 8px;"
+                            required></textarea>
+                    </div>
+                    <div id="reqMsg" style="margin-bottom: 10px; font-weight: 500;"></div>
+                    <button type="submit" class="btn" style="width: 100%;">Send Request</button>
+                </form>
+            </div>
+
+            <!-- Requests Lists -->
+            <div style="flex: 2; min-width: 300px;">
+                <!-- Incoming Requests -->
+                <div class="card" style="margin-bottom: 20px;">
+                    <h3>Incoming Requests</h3>
+                    <div id="incomingLoader">Loading...</div>
+                    <div id="incomingList" style="display:none;"></div>
+                </div>
+
+                <!-- Outgoing Requests -->
+                <div class="card">
+                    <h3>Outgoing Requests</h3>
+                    <div id="outgoingLoader">Loading...</div>
+                    <div id="outgoingList" style="display:none;"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- PIN Modal -->
+    <div id="pinModal" class="modal">
+        <div class="modal-content">
+            <h3>Enter PIN to Accept</h3>
+            <p id="pinModalText" style="color: #64748b; font-size: 0.9rem; margin-bottom: 15px;"></p>
+            <input type="password" id="acceptPin" class="form-group"
+                style="width: 100%; padding: 10px; margin-bottom: 15px;" placeholder="6-digit PIN" maxlength="6">
+            <input type="hidden" id="acceptReqId">
+            <div id="pinError" style="color:red; margin-bottom: 10px; display:none;"></div>
+            <div style="display: flex; gap: 10px;">
+                <button class="btn" onclick="confirmAccept()" style="flex: 1;">Confirm Payment</button>
+                <button class="btn" onclick="closePinModal()" style="flex: 1; background: #94a3b8;">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <div th:replace="~{fragments/layout :: footerFragment}"></div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            loadIncoming();
+            loadOutgoing();
+        });
+
+        async function sendRequest() {
+            const btn = document.querySelector('#reqForm button[type="submit"]');
+            const msg = document.getElementById('reqMsg');
+
+            setButtonLoading(btn, true, 'Sending Request...');
+            msg.innerText = "";
+            msg.style.color = "inherit";
+
+            const user = JSON.parse(sessionStorage.getItem('user'));
+            const identifier = document.getElementById('reqIdentifier').value;
+            const amount = document.getElementById('reqAmount').value;
+            const purpose = document.getElementById('reqPurpose').value;
+
+            try {
+                // 1. Resolve user ID by email/phone
+                let targetRes = await fetchWithAuth(`/api/users/identifier?identifier=${encodeURIComponent(identifier)}`);
+                if (!targetRes.ok) {
+                    throw new Error("User not found with that email/phone.");
+                }
+                const targetUser = await targetRes.json();
+
+                // 2. Send Request
+                const payload = {
+                    requesterId: user.id,
+                    requesteeId: targetUser.id,
+                    amount: parseFloat(amount),
+                    purpose: purpose
+                };
+
+                const reqRes = await fetchWithAuth(`/api/money-requests/send`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                if (reqRes.ok) {
+                    msg.innerText = "Request sent successfully!";
+                    msg.style.color = "green";
+                    document.getElementById('reqForm').reset();
+                    loadOutgoing(); // Refresh list
+                } else {
+                    const data = await reqRes.json();
+                    throw new Error(data.message || "Failed to send request.");
+                }
+            } catch (err) {
+                msg.innerText = err.message;
+                msg.style.color = "red";
+            } finally {
+                setButtonLoading(btn, false);
+            }
+        }
+
+        async function loadIncoming() {
+            const user = JSON.parse(sessionStorage.getItem('user'));
+            const listObj = document.getElementById('incomingList');
+            const loader = document.getElementById('incomingLoader');
+
+            try {
+                const res = await fetchWithAuth(`/api/money-requests/user/${user.id}/incoming`);
+                if (res.ok) {
+                    const data = await res.json();
+                    listObj.innerHTML = '';
+                    if (data.length === 0) listObj.innerHTML = '<p style="color:#64748b;">No incoming requests.</p>';
+                    else {
+                        data.reverse().forEach(req => {
+                            const dateStr = new Date(req.createdAt).toLocaleString();
+                            let actions = '';
+                            if (req.status === 'PENDING') {
+                                actions = `
+                                    <div style="margin-top: 10px; display: flex; gap: 10px;">
+                                        <button class="btn" style="background: #10b981; padding: 6px 15px; font-size: 0.8rem;" onclick="openPinModal(${req.id}, ${req.amount}, '${req.requesterName || 'User'}')">Pay Now</button>
+                                        <button class="btn" style="background: #ef4444; padding: 6px 15px; font-size: 0.8rem;" onclick="declineReq(${req.id})">Decline</button>
+                                    </div>
+                                `;
+                            }
+                            listObj.innerHTML += `
+                                <div class="request-card">
+                                    <div class="request-header">
+                                        <strong>From: ${req.requesterName || 'User ID ' + req.requesterId}</strong>
+                                        <span class="req-status-${req.status.toLowerCase()}">${req.status}</span>
+                                    </div>
+                                    <div style="font-size: 1.2rem; font-weight: bold; color: var(--primary-color); margin-bottom: 5px;">$${req.amount.toLocaleString(undefined, { minimumFractionDigits: 2 })}</div>
+                                    <div style="color: #475569; font-size: 0.9rem; margin-bottom: 5px;">${req.purpose}</div>
+                                    <div style="color: #94a3b8; font-size: 0.75rem;">Requested on ${dateStr}</div>
+                                    ${actions}
+                                </div>
+                            `;
+                        });
+                    }
+                    loader.style.display = 'none';
+                    listObj.style.display = 'block';
+                }
+            } catch (e) { loader.innerText = "Error loading requests."; }
+        }
+
+        async function loadOutgoing() {
+            const user = JSON.parse(sessionStorage.getItem('user'));
+            const listObj = document.getElementById('outgoingList');
+            const loader = document.getElementById('outgoingLoader');
+
+            try {
+                const res = await fetchWithAuth(`/api/money-requests/user/${user.id}/outgoing`);
+                if (res.ok) {
+                    const data = await res.json();
+                    listObj.innerHTML = '';
+                    if (data.length === 0) listObj.innerHTML = '<p style="color:#64748b;">No outgoing requests.</p>';
+                    else {
+                        data.reverse().forEach(req => {
+                            const dateStr = new Date(req.createdAt).toLocaleString();
+                            let actions = '';
+                            if (req.status === 'PENDING') {
+                                actions = `
+                                    <div style="margin-top: 10px;">
+                                        <button class="btn" style="background: #e2e8f0; color: #475569; padding: 6px 15px; font-size: 0.8rem;" onclick="cancelReq(${req.id})">Cancel Request</button>
+                                    </div>
+                                `;
+                            }
+                            listObj.innerHTML += `
+                                <div class="request-card">
+                                    <div class="request-header">
+                                        <strong>To: ${req.requesteeName || 'User ID ' + req.requesteeId}</strong>
+                                        <span class="req-status-${req.status.toLowerCase()}">${req.status}</span>
+                                    </div>
+                                    <div style="font-size: 1.2rem; font-weight: bold; color: var(--primary-color); margin-bottom: 5px;">$${req.amount.toLocaleString(undefined, { minimumFractionDigits: 2 })}</div>
+                                    <div style="color: #475569; font-size: 0.9rem; margin-bottom: 5px;">${req.purpose}</div>
+                                    <div style="color: #94a3b8; font-size: 0.75rem;">Requested on ${dateStr}</div>
+                                    ${actions}
+                                </div>
+                            `;
+                        });
+                    }
+                    loader.style.display = 'none';
+                    listObj.style.display = 'block';
+                }
+            } catch (e) { loader.innerText = "Error loading requests."; }
+        }
+
+        // Action Handlers
+        function openPinModal(id, amount, requester) {
+            document.getElementById('acceptReqId').value = id;
+            document.getElementById('pinModalText').innerText = `You are about to send $${amount.toFixed(2)} to ${requester}.`;
+            document.getElementById('pinModal').style.display = 'block';
+            document.getElementById('pinError').style.display = 'none';
+        }
+
+        function closePinModal() {
+            document.getElementById('pinModal').style.display = 'none';
+            document.getElementById('acceptPin').value = '';
+        }
+
+        async function confirmAccept() {
+            const reqId = document.getElementById('acceptReqId').value;
+            const pin = document.getElementById('acceptPin').value;
+            const user = JSON.parse(sessionStorage.getItem('user'));
+            const errDiv = document.getElementById('pinError');
+            const btn = document.querySelector('#pinModal button.btn:first-of-type');
+
+            if (!pin) { errDiv.innerText = "PIN is required"; errDiv.style.display = 'block'; return; }
+
+            setButtonLoading(btn, true, 'Processing Payment...');
+            try {
+                const res = await fetchWithAuth(`/api/money-requests/${reqId}/accept/user/${user.id}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ pin: pin })
+                });
+
+                if (res.ok) {
+                    closePinModal();
+                    alert("Payment sent successfully!");
+                    loadIncoming();
+                } else {
+                    const data = await res.json();
+                    throw new Error(data.message || "Payment failed");
+                }
+            } catch (e) {
+                errDiv.innerText = e.message;
+                errDiv.style.display = 'block';
+            } finally {
+                setButtonLoading(btn, false);
+            }
+        }
+
+        async function declineReq(id) {
+            if (!confirm("Decline this request?")) return;
+            const user = JSON.parse(sessionStorage.getItem('user'));
+            await fetchWithAuth(`/api/money-requests/${id}/decline/user/${user.id}`, { method: 'POST' });
+            loadIncoming();
+        }
+
+        async function cancelReq(id) {
+            if (!confirm("Cancel this outgoing request?")) return;
+            const user = JSON.parse(sessionStorage.getItem('user'));
+            await fetchWithAuth(`/api/money-requests/${id}/cancel/user/${user.id}`, { method: 'POST' });
+            loadOutgoing();
+        }
+    </script>
+</body>
+
+</html>

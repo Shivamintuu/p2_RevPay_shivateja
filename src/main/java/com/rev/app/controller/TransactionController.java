@@ -17,4 +17,9 @@ public class TransactionController {
     public String showSendMoneyPage() {
         return "send_money"; // e.g. send_money.html
     }
+
+    @GetMapping("/requests")
+    public String showMoneyRequestsPage() {
+        return "money_requests";
+    }
 }

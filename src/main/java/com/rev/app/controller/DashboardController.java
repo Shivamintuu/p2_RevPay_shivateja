@@ -13,6 +13,11 @@ public class DashboardController {
         return "dashboard"; // Assuming dashboard.html
     }
 
+    @GetMapping("/business")
+    public String showBusinessDashboard() {
+        return "business_dashboard";
+    }
+
     @GetMapping("/transactions")
     public String showTransactions() {
         return "transactions";

@@ -10,8 +10,8 @@ import org.hibernate.annotations.SQLDelete;
 import org.hibernate.annotations.SQLRestriction;
 
 @Entity
-@Table(name = "users")
-@SQLDelete(sql = "UPDATE users SET deleted = true WHERE id=?")
+@Table(name = "rev_users")
+@SQLDelete(sql = "UPDATE rev_users SET deleted = true WHERE id=?")
 @SQLRestriction("deleted = false")
 @Data
 @EqualsAndHashCode(callSuper=false)
@@ -20,7 +20,7 @@ import org.hibernate.annotations.SQLRestriction;
 public class User extends Auditable {
 
     public enum Role {
-        PERSONAL, BUSINESS
+        PERSONAL, BUSINESS, ADMIN
     }
 
     @Id
@@ -61,4 +61,17 @@ public class User extends Auditable {
     private String taxId;
     private String businessAddress;
     private Boolean isBusinessVerified;
+
+    // Notification Preferences
+    private Boolean transactionAlerts = true;
+
+    private Boolean securityAlerts = true;
+
+    public boolean isTransactionAlerts() {
+        return Boolean.TRUE.equals(transactionAlerts);
+    }
+
+    public boolean isSecurityAlerts() {
+        return Boolean.TRUE.equals(securityAlerts);
+    }
 }

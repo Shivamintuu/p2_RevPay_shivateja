@@ -182,6 +182,80 @@ public class IWalletServiceImpl implements IWalletService {
     }
 
     @Override
+    @Transactional
+    @Caching(evict = {
+        @CacheEvict(value = "wallets", key = "#userId"),
+        @CacheEvict(value = "analytics", key = "#userId")
+    })
+    public WalletDTO adminAddFunds(Long userId, BigDecimal amount) {
+        log.info("Admin adding {} funds to wallet for user ID: {}", amount, userId);
+        
+        Wallet wallet = walletRepository.findByUserId(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("Wallet not found for user: " + userId));
+
+        if (amount.compareTo(BigDecimal.ZERO) <= 0) {
+            throw new IllegalArgumentException("Amount must be greater than zero");
+        }
+
+        wallet.setBalance(wallet.getBalance().add(amount));
+        Wallet savedWallet = walletRepository.save(wallet);
+
+        // Record Transaction
+        Transaction tx = new Transaction();
+        tx.setSender(wallet.getUser()); // System/Admin action
+        tx.setRecipient(wallet.getUser());
+        tx.setAmount(amount);
+        tx.setType(TransactionType.ADD_FUNDS);
+        tx.setStatus(TransactionStatus.COMPLETED);
+        tx.setNote("Funds added by Administrator");
+        transactionRepository.save(tx);
+        
+        emailService.sendTransactionNotification(wallet.getUser().getEmail(), 
+                "An administrator has added " + amount + " to your wallet.");
+
+        return walletMapper.toDTO(savedWallet);
+    }
+
+    @Override
+    @Transactional
+    @Caching(evict = {
+        @CacheEvict(value = "wallets", key = "#userId"),
+        @CacheEvict(value = "analytics", key = "#userId")
+    })
+    public WalletDTO adminDeductFunds(Long userId, BigDecimal amount) {
+        log.info("Admin deducting {} funds from wallet for user ID: {}", amount, userId);
+        
+        Wallet wallet = walletRepository.findByUserId(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("Wallet not found for user: " + userId));
+
+        if (amount.compareTo(BigDecimal.ZERO) <= 0) {
+            throw new IllegalArgumentException("Amount must be greater than zero");
+        }
+
+        if (wallet.getBalance().compareTo(amount) < 0) {
+            throw new InsufficientFundsException("User has insufficient funds for admin deduction: " + amount);
+        }
+        
+        wallet.setBalance(wallet.getBalance().subtract(amount));
+        Wallet savedWallet = walletRepository.save(wallet);
+
+        // Record Transaction
+        Transaction tx = new Transaction();
+        tx.setSender(wallet.getUser());
+        tx.setRecipient(wallet.getUser()); // System/Admin action
+        tx.setAmount(amount);
+        tx.setType(TransactionType.WITHDRAW);
+        tx.setStatus(TransactionStatus.COMPLETED);
+        tx.setNote("Funds deducted by Administrator");
+        transactionRepository.save(tx);
+        
+        emailService.sendTransactionNotification(wallet.getUser().getEmail(), 
+                "An administrator has deducted " + amount + " from your wallet.");
+
+        return walletMapper.toDTO(savedWallet);
+    }
+
+    @Override
     public boolean hasSufficientBalance(Long userId, BigDecimal amount) {
         Wallet wallet = walletRepository.findByUserId(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("Wallet not found for user: " + userId));

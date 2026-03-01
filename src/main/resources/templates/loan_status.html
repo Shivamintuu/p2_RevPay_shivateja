@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <div th:replace="~{fragments/layout :: headFragment('Loan Status - RevPay')}"></div>
+    <style>
+        .loan-status-pending {
+            background: #fef08a;
+            color: #854d0e;
+        }
+
+        .loan-status-approved {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .loan-status-rejected {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .loan-status-paid {
+            background: #dbeafe;
+            color: #1e40af;
+        }
+    </style>
+</head>
+
+<body>
+    <div th:replace="~{fragments/layout :: headerFragment}"></div>
+
+    <div class="main-content">
+        <h2 style="display: flex; justify-content: space-between; align-items: center;">
+            My Loan Applications
+            <a href="/loan/apply" class="btn">+ Apply for New Loan</a>
+        </h2>
+
+        <div class="card" style="padding: 20px;">
+            <div id="loader" style="text-align:center; padding: 20px;">Loading loans...</div>
+
+            <div id="loanContainer" style="display:none; overflow-x: auto;">
+                <table style="width: 100%; border-collapse: collapse; text-align: left;">
+                    <thead>
+                        <tr
+                            style="border-bottom: 2px solid #e2e8f0; color: #64748b; font-size: 0.85rem; text-transform: uppercase;">
+                            <th style="padding: 15px 10px;">ID</th>
+                            <th style="padding: 15px 10px;">Date Applied</th>
+                            <th style="padding: 15px 10px;">Amount & Tenure</th>
+                            <th style="padding: 15px 10px;">Interest & EMI</th>
+                            <th style="padding: 15px 10px;">Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="loanBody">
+                        <!-- Populated by JS -->
+                    </tbody>
+                </table>
+            </div>
+            <div id="errorMsg" class="error" style="display:none; margin-top: 15px;"></div>
+        </div>
+    </div>
+
+    <div th:replace="~{fragments/layout :: footerFragment}"></div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', loadLoans);
+
+        async function loadLoans() {
+            const userStr = sessionStorage.getItem('user');
+            if (!userStr || JSON.parse(userStr).role !== 'BUSINESS') {
+                window.location.href = '/dashboard';
+                return;
+            }
+            const user = JSON.parse(userStr);
+            const container = document.getElementById('loanContainer');
+            const loader = document.getElementById('loader');
+            const tbody = document.getElementById('loanBody');
+
+            try {
+                const res = await fetchWithAuth(`/api/loans/business/${user.id}`);
+                if (res.ok) {
+                    const loans = await res.json();
+                    tbody.innerHTML = '';
+
+                    if (loans.length === 0) {
+                        tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding: 20px;">No loan applications found.</td></tr>';
+                    } else {
+                        loans.reverse().forEach(loan => { // Show newest first
+                            const statusCls = `loan-status-${loan.status.toLowerCase()}`;
+                            const applyDate = loan.appliedAt ? new Date(loan.appliedAt).toLocaleDateString() : 'N/A';
+
+                            tbody.innerHTML += `
+                                <tr style="border-bottom: 1px solid #f1f5f9;">
+                                    <td style="padding: 15px 10px; font-weight: bold; color: #64748b;">#LOAN-${loan.id}</td>
+                                    <td style="padding: 15px 10px;">${applyDate}</td>
+                                    <td style="padding: 15px 10px;">
+                                        <div style="font-weight: 500;">$${loan.amount.toLocaleString(undefined, { minimumFractionDigits: 2 })}</div>
+                                        <div style="font-size: 0.8rem; color: #64748b;">${loan.tenureMonths} Months</div>
+                                    </td>
+                                    <td style="padding: 15px 10px;">
+                                        <div><strong style="color:var(--primary-color)">$${loan.emi ? loan.emi.toLocaleString(undefined, { minimumFractionDigits: 2 }) : '0.00'}/mo</strong></div>
+                                        <div style="font-size: 0.8rem; color: #64748b;">@ ${loan.interestRate}% P.A.</div>
+                                    </td>
+                                    <td style="padding: 15px 10px;">
+                                        <span class="${statusCls}" style="padding: 4px 10px; border-radius: 12px; font-size: 0.75rem; font-weight: 700; text-transform: uppercase;">
+                                            ${loan.status}
+                                        </span>
+                                    </td>
+                                </tr>
+                            `;
+                        });
+                    }
+                    loader.style.display = 'none';
+                    container.style.display = 'block';
+                } else {
+                    throw new Error("Failed to load loan applications.");
+                }
+            } catch (err) {
+                loader.style.display = 'none';
+                document.getElementById('errorMsg').innerText = err.message;
+                document.getElementById('errorMsg').style.display = 'block';
+            }
+        }
+    </script>
+</body>
+
+</html>

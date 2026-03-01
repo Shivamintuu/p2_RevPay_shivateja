@@ -1,6 +1,7 @@
 package com.rev.app.service;
 
 import com.rev.app.dto.TransactionDTO;
+import com.rev.app.entity.Notification.NotificationType;
 import com.rev.app.entity.Transaction;
 import com.rev.app.entity.Transaction.TransactionStatus;
 import com.rev.app.entity.Transaction.TransactionType;
@@ -37,6 +38,7 @@ public class ITransactionServiceImpl implements ITransactionService {
     private final TransactionMapper transactionMapper;
     private final PasswordEncoder passwordEncoder;
     private final IEmailService emailService;
+    private final INotificationService notificationService;
 
     @Autowired
     public ITransactionServiceImpl(ITransactionRepository transactionRepository, 
@@ -44,13 +46,15 @@ public class ITransactionServiceImpl implements ITransactionService {
                                    IWalletRepository walletRepository,
                                    TransactionMapper transactionMapper,
                                    PasswordEncoder passwordEncoder,
-                                   IEmailService emailService) {
+                                   IEmailService emailService,
+                                   INotificationService notificationService) {
         this.transactionRepository = transactionRepository;
         this.userRepository = userRepository;
         this.walletRepository = walletRepository;
         this.transactionMapper = transactionMapper;
         this.passwordEncoder = passwordEncoder;
         this.emailService = emailService;
+        this.notificationService = notificationService;
     }
 
     @Override
@@ -120,10 +124,22 @@ public class ITransactionServiceImpl implements ITransactionService {
         
         Transaction savedTx = transactionRepository.save(tx);
         
-        emailService.sendTransactionNotification(sender.getEmail(), 
-                "You successfully sent " + amount + " to " + recipient.getFullName() + ".");
-        emailService.sendTransactionNotification(recipient.getEmail(), 
-                "You successfully received " + amount + " from " + sender.getFullName() + ".");
+        // Save in-app notifications for both sender and recipient
+        notificationService.createNotification(sender.getId(),
+                "You sent $" + amount + " to " + recipient.getFullName() + (note != null && !note.isEmpty() ? " — " + note : "") + ".",
+                NotificationType.TRANSACTION);
+        notificationService.createNotification(recipient.getId(),
+                "You received $" + amount + " from " + sender.getFullName() + (note != null && !note.isEmpty() ? " — " + note : "") + ".",
+                NotificationType.TRANSACTION);
+
+        if (sender.isTransactionAlerts()) {
+            emailService.sendTransactionNotification(sender.getEmail(), 
+                    "You successfully sent $" + amount + " to " + recipient.getFullName() + ".");
+        }
+        if (recipient.isTransactionAlerts()) {
+            emailService.sendTransactionNotification(recipient.getEmail(), 
+                    "You successfully received $" + amount + " from " + sender.getFullName() + ".");
+        }
 
         return transactionMapper.toDTO(savedTx);
     }

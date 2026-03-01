@@ -11,6 +11,7 @@ public interface ILoanApplicationService {
     LoanApplicationDTO applyForLoan(Long businessUserId, LoanApplicationDTO loanApplicationDTO);
     LoanApplicationDTO getLoanApplicationById(Long id);
     List<LoanApplicationDTO> getLoanApplicationsByBusinessUserId(Long businessUserId);
+    List<LoanApplicationDTO> getAllLoanApplications();
     LoanApplicationDTO updateLoanStatus(Long id, com.rev.app.entity.LoanApplication.LoanStatus status);
     Map<String, Object> simulateLoanRepayment(BigDecimal principal, Integer tenureMonths, BigDecimal interestRate);
 }
