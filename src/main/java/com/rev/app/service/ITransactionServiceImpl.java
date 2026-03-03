@@ -10,6 +10,7 @@ import com.rev.app.entity.Wallet;
 import com.rev.app.exception.BadRequestException;
 import com.rev.app.exception.InsufficientFundsException;
 import com.rev.app.exception.InvalidCredentialsException;
+import com.rev.app.exception.InvalidTransactionPinException;
 import com.rev.app.exception.ResourceNotFoundException;
 import com.rev.app.mapper.TransactionMapper;
 import com.rev.app.repository.ITransactionRepository;
@@ -58,7 +59,7 @@ public class ITransactionServiceImpl implements ITransactionService {
     }
 
     @Override
-    @Transactional(noRollbackFor = {InsufficientFundsException.class, BadRequestException.class, InvalidCredentialsException.class})
+    @Transactional(noRollbackFor = {InsufficientFundsException.class, BadRequestException.class, InvalidCredentialsException.class, InvalidTransactionPinException.class})
     @Caching(evict = {
         @CacheEvict(value = "wallets", key = "#senderId"),
         @CacheEvict(value = "wallets", key = "#recipientId"),
@@ -81,9 +82,13 @@ public class ITransactionServiceImpl implements ITransactionService {
         User recipient = userRepository.findById(recipientId)
                 .orElseThrow(() -> new ResourceNotFoundException("Recipient not found"));
 
-        if (sender.getTransactionPin() == null || !passwordEncoder.matches(pin, sender.getTransactionPin())) {
-            log.warn("Transfer failed: Invalid transaction PIN for sender ID {}", senderId);
-            throw new InvalidCredentialsException("Invalid transaction PIN");
+        if (sender.getTransactionPin() == null) {
+            log.warn("Transfer failed: No transaction PIN set for sender ID {}", senderId);
+            throw new InvalidTransactionPinException("You have not set a transaction PIN. Please set one in your Profile settings before sending money.");
+        }
+        if (!passwordEncoder.matches(pin, sender.getTransactionPin())) {
+            log.warn("Transfer failed: Incorrect transaction PIN for sender ID {}", senderId);
+            throw new InvalidTransactionPinException("Incorrect transaction PIN. Please try again.");
         }
 
         Wallet senderWallet = walletRepository.findByUserId(senderId)

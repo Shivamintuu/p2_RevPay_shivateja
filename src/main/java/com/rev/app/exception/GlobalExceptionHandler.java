@@ -37,6 +37,12 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(errorDetails, HttpStatus.UNAUTHORIZED);
     }
 
+    @ExceptionHandler(InvalidTransactionPinException.class)
+    public ResponseEntity<ErrorDetails> handleInvalidTransactionPinException(InvalidTransactionPinException ex) {
+        ErrorDetails errorDetails = new ErrorDetails(LocalDateTime.now(), ex.getMessage(), "INVALID_PIN");
+        return new ResponseEntity<>(errorDetails, HttpStatus.FORBIDDEN);
+    }
+
     @ExceptionHandler(org.springframework.security.authentication.BadCredentialsException.class)
     public ResponseEntity<ErrorDetails> handleBadCredentialsException(org.springframework.security.authentication.BadCredentialsException ex) {
         ErrorDetails errorDetails = new ErrorDetails(LocalDateTime.now(), "Invalid email or password", "UNAUTHORIZED");

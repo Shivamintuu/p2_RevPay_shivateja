@@ -35,7 +35,7 @@ public class SecurityConfig {
             // are inherently voided since the browser does not automatically send authorization credentials.
             .csrf(csrf -> csrf.disable()) 
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/", "/login", "/register", "/home", "/error", "/favicon.ico", "/css/**", "/js/**", "/images/**").permitAll()
+                .requestMatchers("/", "/login", "/register", "/home", "/error", "/favicon.ico", "/css/**", "/js/**", "/img/**", "/images/**").permitAll()
                 .requestMatchers("/api/auth/**").permitAll()
                 .requestMatchers("/api/public/**").permitAll()
                 .requestMatchers("/admin/**", "/dashboard/**", "/wallet/**", "/transaction/**", "/user/**", "/invoice/**", "/loan/**", "/payment-method/**", "/money-request/**", "/cards/**", "/notifications/**", "/business/**").permitAll() 

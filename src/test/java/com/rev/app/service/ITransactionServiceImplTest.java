@@ -17,6 +17,8 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import com.rev.app.service.IEmailService;
+import com.rev.app.service.INotificationService;
 
 import java.math.BigDecimal;
 import java.util.Optional;
@@ -41,6 +43,12 @@ class ITransactionServiceImplTest {
 
     @Mock
     private PasswordEncoder passwordEncoder;
+
+    @Mock
+    private IEmailService emailService;
+
+    @Mock
+    private INotificationService notificationService;
 
     @InjectMocks
     private ITransactionServiceImpl transactionService;
@@ -102,7 +110,7 @@ class ITransactionServiceImplTest {
         when(userRepository.findById(2L)).thenReturn(Optional.of(recipient));
         when(passwordEncoder.matches("wrongPin", "encodedPin")).thenReturn(false);
 
-        assertThrows(InvalidCredentialsException.class, () -> 
+        assertThrows(com.rev.app.exception.InvalidTransactionPinException.class, () -> 
             transactionService.sendMoney(1L, 2L, new BigDecimal("40.0"), "Test Note", "wrongPin"));
     }
 
@@ -127,7 +135,7 @@ class ITransactionServiceImplTest {
         assertThrows(InsufficientFundsException.class, () -> 
             transactionService.sendMoney(1L, 2L, new BigDecimal("40.0"), "Test Note", "123456"));
             
-        verify(transactionRepository, times(1)).save(any(Transaction.class)); // Verifies failed tx is saved
+        verify(transactionRepository, times(1)).saveAndFlush(any(Transaction.class)); // Verifies failed tx is saved
         assertEquals(new BigDecimal("10.0"), senderWallet.getBalance()); // Balance unchanged
     }
 }

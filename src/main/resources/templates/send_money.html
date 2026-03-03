@@ -42,6 +42,10 @@
                 </div>
 
                 <div id="errorMessage" class="error" style="display:none; margin-bottom: 10px;"></div>
+                <div id="pinHelpMsg" style="display:none; margin-bottom:10px; padding:10px; background:#fef3c7; border-left:4px solid #f59e0b; border-radius:6px; font-size:0.9rem;">
+                    💡 <strong>Haven't set a Transaction PIN yet?</strong>
+                    Go to <a href="/settings" style="color:#d97706; font-weight:700;">Account Settings → Transaction PIN</a> to set it, then come back here.
+                </div>
                 <div id="successMessage" style="color: green; font-weight: 600; display:none; margin-bottom: 10px;"></div>
 
                 <button type="submit" class="btn" style="width: 100%; padding: 12px; font-size: 1rem;">
@@ -147,6 +151,13 @@
                 errorDiv.innerText = err.message;
                 errorDiv.style.display = 'block';
                 successDiv.style.display = 'none';
+                // Show PIN help if error is about transaction PIN
+                const pinHelp = document.getElementById('pinHelpMsg');
+                if (err.message && err.message.toLowerCase().includes('pin')) {
+                    pinHelp.style.display = 'block';
+                } else {
+                    pinHelp.style.display = 'none';
+                }
             } finally {
                 setButtonLoading(btn, false);
             }

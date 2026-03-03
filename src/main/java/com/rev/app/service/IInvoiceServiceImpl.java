@@ -90,10 +90,7 @@ public class IInvoiceServiceImpl implements IInvoiceService {
     public void sendInvoiceNotification(Long invoiceId) {
         Invoice invoice = invoiceRepository.findById(invoiceId)
                 .orElseThrow(() -> new ResourceNotFoundException("Invoice not found: " + invoiceId));
-        
-        // In a real scenario, this might send an email via JavaMailSender or SMS.
-        // For the scope of RevPay in-app notifications, we notify if the customer is an app user.
-        
+
         // E.g., find user by email
         userRepository.findByEmail(invoice.getCustomerEmail()).ifPresent(customer -> {
             notificationService.createNotification(customer.getId(), 
