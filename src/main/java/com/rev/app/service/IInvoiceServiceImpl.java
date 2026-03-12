@@ -22,17 +22,20 @@ public class IInvoiceServiceImpl implements IInvoiceService {
     private final IInvoiceRepository invoiceRepository;
     private final IUserRepository userRepository;
     private final InvoiceMapper invoiceMapper;
-    private final INotificationService notificationService; // Added to send notifications
+    private final INotificationService notificationService;
+    private final IMoneyRequestService moneyRequestService; // Added to create money requests
 
     @Autowired
     public IInvoiceServiceImpl(IInvoiceRepository invoiceRepository, 
                                IUserRepository userRepository, 
                                InvoiceMapper invoiceMapper,
-                               INotificationService notificationService) {
+                               INotificationService notificationService,
+                               IMoneyRequestService moneyRequestService) {
         this.invoiceRepository = invoiceRepository;
         this.userRepository = userRepository;
         this.invoiceMapper = invoiceMapper;
         this.notificationService = notificationService;
+        this.moneyRequestService = moneyRequestService;
     }
 
     @Override
@@ -59,7 +62,25 @@ public class IInvoiceServiceImpl implements IInvoiceService {
             invoice.getItems().forEach(item -> item.setInvoice(invoice));
         }
 
-        return invoiceMapper.toDTO(invoiceRepository.save(invoice));
+        Invoice savedInvoice = invoiceRepository.save(invoice);
+        InvoiceDTO savedInvoiceDTO = invoiceMapper.toDTO(savedInvoice);
+
+        // Automatically create a Money Request to the customer
+        userRepository.findByEmail(savedInvoice.getCustomerEmail()).ifPresent(customer -> {
+            try {
+                moneyRequestService.sendRequest(
+                    businessUserId, 
+                    customer.getId(), 
+                    savedInvoiceDTO.getTotalAmount(), 
+                    "Invoice Payment: #" + savedInvoice.getId()
+                );
+            } catch (Exception e) {
+                // Log and swallow exception so invoice creation still succeeds
+                 System.err.println("Failed to cascade Money Request for Invoice: " + e.getMessage());
+            }
+        });
+
+        return savedInvoiceDTO;
     }
 
     @Override

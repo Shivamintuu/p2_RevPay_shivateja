@@ -25,6 +25,10 @@ graph TD
         DB[(Oracle 23ai Database)]
     end
 
+    subgraph "External Services"
+        Email[Email Provider / SMTP]
+    end
+
     UI --> WC
     Statics --> UI
     Postman[Postman / Ext API] --> RC
@@ -35,6 +39,7 @@ graph TD
     Impl --> Repo
     Repo --> DB
     Impl --> Mapper
+    Impl --> Email
 ```
 
 ## Layers Overview

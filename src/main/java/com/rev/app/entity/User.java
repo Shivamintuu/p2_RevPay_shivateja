@@ -62,6 +62,10 @@ public class User extends Auditable {
     private String businessAddress;
     private Boolean isBusinessVerified;
 
+    // Account Status
+    @Column(nullable = true, columnDefinition = "number(1,0) default 1")
+    private Boolean isActive = true;
+
     // Notification Preferences
     private Boolean transactionAlerts = true;
 

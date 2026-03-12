@@ -18,6 +18,10 @@ Role-Based Access Control is enforced at the URL level:
 - **Balance Validation:** Real-time checks prevent overspending or negative balances.
 - **PIN Verification:** (Implementation Ready) Secure hash storage for transaction PINs.
 
-## 4. Data Protection
+## 4. Multi-Factor Authentication
+- **Email OTP (2FA):** During the login process, users are required to verify their identity via a time-sensitive One-Time Password sent to their registered email address. This mitigates risks associated with compromised passwords.
+- **Security Alerts:** Automated email notifications are sent for critical account events (e.g., successful logins from new devices, password changes).
+
+## 5. Data Protection
 - **DTO Pattern:** Data Transfer Objects used to prevent exposing sensitive internal fields like password hashes or internal IDs to the UI.
 - **CSRF Protection:** Configured to prevent cross-site request forgery.

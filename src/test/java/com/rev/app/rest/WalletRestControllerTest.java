@@ -3,6 +3,7 @@ package com.rev.app.rest;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -46,9 +47,9 @@ class WalletRestControllerTest {
         WalletDTO walletDTO = new WalletDTO();
         walletDTO.setBalance(new BigDecimal("150.00"));
 
-        when(walletService.addFunds(anyLong(), any(), any())).thenReturn(walletDTO);
+        when(walletService.addFunds(anyLong(), any(), any(), anyString())).thenReturn(walletDTO);
 
-        ResponseEntity<WalletDTO> response = walletRestController.addFunds(1L, new BigDecimal("50.00"), null);
+        ResponseEntity<WalletDTO> response = walletRestController.addFunds(1L, new BigDecimal("50.00"), null, "1234");
 
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertEquals(new BigDecimal("150.00"), response.getBody().getBalance());

@@ -27,14 +27,16 @@ public class WalletRestController {
     @PostMapping("/user/{userId}/add")
     public ResponseEntity<WalletDTO> addFunds(@PathVariable Long userId, 
                                               @RequestParam BigDecimal amount, 
-                                              @RequestParam(required = false) Long paymentMethodId) {
-        return ResponseEntity.ok(walletService.addFunds(userId, amount, paymentMethodId));
+                                              @RequestParam(required = false) Long paymentMethodId,
+                                              @RequestParam String transactionPin) {
+        return ResponseEntity.ok(walletService.addFunds(userId, amount, paymentMethodId, transactionPin));
     }
 
     @PostMapping("/user/{userId}/withdraw")
     public ResponseEntity<WalletDTO> withdrawFunds(@PathVariable Long userId, 
                                                    @RequestParam BigDecimal amount, 
-                                                   @RequestParam(required = false) Long paymentMethodId) {
-        return ResponseEntity.ok(walletService.withdrawFunds(userId, amount, paymentMethodId));
+                                                   @RequestParam(required = false) Long paymentMethodId,
+                                                   @RequestParam String transactionPin) {
+        return ResponseEntity.ok(walletService.withdrawFunds(userId, amount, paymentMethodId, transactionPin));
     }
 }

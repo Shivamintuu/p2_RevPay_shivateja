@@ -10,7 +10,7 @@ public class HomeController {
 
     @GetMapping({"", "/", "/home"})
     public String showHomePage() {
-        return "index"; // Assuming index.html Thymeleaf template
+        return "index"; 
     }
 
     @GetMapping("/login")

@@ -45,7 +45,7 @@ erDiagram
 ```
 
 ## Core Tables
-1.  **USERS (users):** Base authentication table (Email, Password, Role).
+1.  **USERS (users):** Base authentication table (Email, Password, Role, 2FA OTP).
 2.  **PERSONAL_USERS (personal_users):** Extended profile for individuals.
 3.  **BUSINESS_USERS (business_users):** Extended profile for companies (Tax ID, Business Type).
 4.  **WALLETS (wallets):** Holds user balances.

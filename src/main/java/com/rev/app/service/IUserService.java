@@ -2,6 +2,7 @@ package com.rev.app.service;
 
 import com.rev.app.dto.UserDTO;
 import java.util.List;
+import org.springframework.data.domain.Page;
 
 public interface IUserService {
     UserDTO registerUser(UserDTO userDTO, String password);
@@ -9,6 +10,7 @@ public interface IUserService {
     UserDTO getUserById(Long id);
     UserDTO getUserByEmail(String email);
     List<UserDTO> getAllUsers();
+    Page<UserDTO> getAllUsersPaginated(int page, int size, String sortBy, String sortDir, String search);
     UserDTO updateUser(Long id, UserDTO userDTO);
     UserDTO adminCreateUser(UserDTO userDTO, String password, com.rev.app.entity.User.Role role);
     UserDTO adminUpdateUser(Long id, UserDTO userDTO, String newPassword, com.rev.app.entity.User.Role role, boolean isActive);

@@ -5,19 +5,102 @@
     <div th:replace="~{fragments/layout :: headFragment('Welcome to RevPay')}"></div>
 </head>
 
-<body>
+<body
+    style="background-image: url('/img/revpay.png'); background-size: cover; background-attachment: fixed; background-position: center;">
     <div th:replace="~{fragments/layout :: headerFragment}"></div>
 
-    <div class="container" style="text-align: center; margin-top: 50px;">
-        <h1>Welcome to RevPay!</h1>
-        <p>Your simple, fast, and secure payment and wallet platform.</p>
+    <!-- Hero Section -->
+    <div style="min-height: 80vh; display: flex; align-items: center; justify-content: center; padding: 20px;">
+        <div
+            style="text-align: center; background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(10px); padding: 50px; border-radius: 15px; box-shadow: 0 8px 32px rgba(0,0,0,0.1); width: 100%; max-width: 800px;">
+            <h1 style="color: #0056b3; font-weight: bold;">Welcome to RevPay!</h1>
+            <p class="lead" style="color: #333; margin-bottom: 30px;">Your simple, fast, and secure payment and wallet
+                platform.</p>
 
-        <br>
-        <div>
-            <a th:href="@{/login}" class="btn" style="margin-right: 15px;">Login</a>
-            <a th:href="@{/register}" class="btn">Create an Account</a>
+            <div style="display: flex; justify-content: center; align-items: center; gap: 20px; flex-wrap: wrap;">
+                <a th:href="@{/login}" class="btn btn-primary btn-lg"
+                    style="padding: 10px 30px; border-radius: 30px;">Login</a>
+                <a th:href="@{/register}" class="btn btn-outline-primary btn-lg"
+                    style="padding: 10px 30px; border-radius: 30px; background: white; color: #007bff;">Create an
+                    Account</a>
+            </div>
         </div>
+    </div>
 
+    <!-- Features Section -->
+    <div class="container"
+        style="margin-top: 60px; background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(10px); padding: 50px; border-radius: 15px; box-shadow: 0 8px 32px rgba(0,0,0,0.1);">
+        <h2 style="text-align: center; margin-bottom: 40px; color: #333; font-weight: bold;">Why Choose RevPay?</h2>
+        <div class="row justify-content-center">
+            <div class="col-md-4 mb-4">
+                <div class="card h-100 shadow-sm border-0"
+                    style="background: rgba(255,255,255,0.9); border-radius: 15px;">
+                    <div class="card-body text-center p-4">
+                        <i class="fas fa-bolt fa-3x mb-3 text-primary"></i>
+                        <h4 class="card-title font-weight-bold">Lightning Fast</h4>
+                        <p class="card-text text-muted">Send and receive payments instantly. No more waiting for
+                            business days to process your transactions.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4 mb-4">
+                <div class="card h-100 shadow-sm border-0"
+                    style="background: rgba(255,255,255,0.9); border-radius: 15px;">
+                    <div class="card-body text-center p-4">
+                        <i class="fas fa-shield-alt fa-3x mb-3 text-success"></i>
+                        <h4 class="card-title font-weight-bold">Bank-grade Security</h4>
+                        <p class="card-text text-muted">Your money and data are protected with state-of-the-art
+                            encryption and continuous fraud monitoring.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4 mb-4">
+                <div class="card h-100 shadow-sm border-0"
+                    style="background: rgba(255,255,255,0.9); border-radius: 15px;">
+                    <div class="card-body text-center p-4">
+                        <i class="fas fa-wallet fa-3x mb-3 text-info"></i>
+                        <h4 class="card-title font-weight-bold">Easy Management</h4>
+                        <p class="card-text text-muted">Link multiple cards and bank accounts. Manage all your finances
+                            effortlessly in one unified dashboard.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- How It Works Section -->
+    <div class="container"
+        style="margin-top: 60px; margin-bottom: 80px; background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(10px); padding: 50px; border-radius: 15px; box-shadow: 0 8px 32px rgba(0,0,0,0.1);">
+        <h2 style="text-align: center; margin-bottom: 50px; color: #333; font-weight: bold;">How It Works</h2>
+
+        <div class="row justify-content-center align-items-center mb-5 text-center">
+            <div class="col-md-4 mb-4 mb-md-0 d-flex flex-column align-items-center">
+                <div
+                    style="background-color: rgba(0, 123, 255, 0.1); border-radius: 50%; width: 100px; height: 100px; display: flex; align-items: center; justify-content: center; font-size: 2.5rem; font-weight: bold; color: #007bff; margin-bottom: 20px;">
+                    1
+                </div>
+                <h4 class="font-weight-bold">Create Account</h4>
+                <p class="text-muted">Sign up in minutes. Get your free wallet easily.</p>
+            </div>
+
+            <div class="col-md-4 mb-4 mb-md-0 d-flex flex-column align-items-center">
+                <div
+                    style="background-color: rgba(40, 167, 69, 0.1); border-radius: 50%; width: 100px; height: 100px; display: flex; align-items: center; justify-content: center; font-size: 2.5rem; font-weight: bold; color: #28a745; margin-bottom: 20px;">
+                    2
+                </div>
+                <h4 class="font-weight-bold">Link Payment</h4>
+                <p class="text-muted">Securely connect your bank account or credit card.</p>
+            </div>
+
+            <div class="col-md-4 d-flex flex-column align-items-center">
+                <div
+                    style="background-color: rgba(23, 162, 184, 0.1); border-radius: 50%; width: 100px; height: 100px; display: flex; align-items: center; justify-content: center; font-size: 2.5rem; font-weight: bold; color: #17a2b8; margin-bottom: 20px;">
+                    3
+                </div>
+                <h4 class="font-weight-bold">Start Transacting</h4>
+                <p class="text-muted">Send money or pay utility bills seamlessly.</p>
+            </div>
+        </div>
     </div>
 
     <div th:replace="~{fragments/layout :: footerFragment}"></div>

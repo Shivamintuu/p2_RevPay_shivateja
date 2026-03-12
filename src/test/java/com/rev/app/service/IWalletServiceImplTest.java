@@ -8,10 +8,10 @@ import com.rev.app.mapper.WalletMapper;
 import com.rev.app.repository.IUserRepository;
 import com.rev.app.repository.IWalletRepository;
 import com.rev.app.repository.ITransactionRepository;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.mockito.MockitoAnnotations;
 
 import java.math.BigDecimal;
@@ -37,6 +37,9 @@ class IWalletServiceImplTest {
 
     @Mock
     private IEmailService emailService;
+
+    @Mock
+    private PasswordEncoder passwordEncoder;
 
     @InjectMocks
     private IWalletServiceImpl walletService;
@@ -75,10 +78,12 @@ class IWalletServiceImplTest {
         Wallet wallet = new Wallet(new User());
         wallet.setBalance(new BigDecimal("50.00"));
 
+        wallet.getUser().setTransactionPin("encoded_pin");
         when(walletRepository.findByUserId(1L)).thenReturn(Optional.of(wallet));
+        when(passwordEncoder.matches("1234", "encoded_pin")).thenReturn(true);
 
         assertThrows(InsufficientFundsException.class, () -> 
-            walletService.withdrawFunds(1L, new BigDecimal("100.00"), 2L));
+            walletService.withdrawFunds(1L, new BigDecimal("100.00"), 2L, "1234"));
         
         verify(walletRepository, never()).save(any(Wallet.class));
     }

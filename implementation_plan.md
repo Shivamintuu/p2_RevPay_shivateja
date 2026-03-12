@@ -1,39 +1,44 @@
-# RevPay Cleanup and Basic UI Implementation
-
-## Goal Description
-The RevPay application currently has a non‑functional dashboard after login and contains UI elements that are overly complex for a student‑style demonstration. The goal is to clean up the codebase, ensure the dashboard loads correctly, and provide a simple, basic UI for login, registration, and dashboard pages.
+# Goal Description
+Update the wallet transactions (add/withdraw) to require the user's `Transaction PIN` and allow selecting a `PaymentMethod`. Additionally, automatically generate a `MoneyRequest` directed to the recipient whenever a business user generates an invoice.
 
 ## Proposed Changes
+
+### Wallet Logic (Card Selection & PIN)
+#### [MODIFY] `src/main/java/com/rev/app/rest/WalletRestController.java`
+- Update `@PostMapping("/user/{userId}/add")` to accept `@RequestParam String transactionPin`.
+- Update `@PostMapping("/user/{userId}/withdraw")` to accept `@RequestParam String transactionPin`.
+
+#### [MODIFY] `src/main/java/com/rev/app/service/IWalletService.java` & `IWalletServiceImpl.java`
+- Update `addFunds` and `withdrawFunds` signatures to accept `String transactionPin`.
+- Inject `PasswordEncoder` and `IPaymentMethodRepository` into `IWalletServiceImpl`.
+- Inside `addFunds` and `withdrawFunds`:
+  - Verify the provided `transactionPin` exactly matches the user's encoded `user.getTransactionPin()` using `passwordEncoder.matches()`. Throw an `InvalidCredentialsException` or `BadRequestException` if it fails.
+  - If `paymentMethodId` is provided, verify it exists and belongs to the user via repository.
+
+#### [MODIFY] `src/main/resources/templates/wallet.html`
+- Add a `<select id="paymentMethodSelect">` to the Add Funds and Withdraw Funds forms.
+- On page load, `fetchWithAuth('/api/payment-methods/user/{userId}')` and populate the `<select>` options with the user's saved cards/banks.
+- Add `<input type="password" id="transactionPin" required>` to both forms.
+- Update the `addFunds()` and `withdrawFunds()` JavaScript functions to append `&paymentMethodId=...&transactionPin=...` to the query parameters in the POST request.
+
 ---
-### Service Layer
-- **UserServiceImpl**: inject `WalletRepository` and create a wallet (balance = 0) after user registration.
-- **WalletServiceImpl**: ensure `createWallet` is called from `UserServiceImpl` and add null‑checks.
----
-### Controller Layer
-- **WebController.dashboard**: add defensive checks for missing wallet/transactions and log warnings.
----
-### Thymeleaf Templates
-- Create a minimal layout `layout/main-layout.html`.
-- Simplify `dashboard.html`, `login.html`, `register.html` to use the layout and a single stylesheet `style.css`.
----
-### Styling (`static/css/style.css`)
-- Use Google Font *Inter*, light‑gray background, white cards, subtle hover effects.
----
-### Security Config
-- Verify `/pay/dashboard` is protected and redirects correctly after login.
----
-### Tests
-- Unit test for `UserServiceImpl.createUser` confirming wallet creation.
-- Integration test (MockMvc) for `/pay/dashboard` returning status 200 and containing model attributes.
----
-### Documentation
-- Update `README.md` with overview, build/run instructions, and a brief UI guide.
-- Add placeholder ERD and architecture diagram files.
+
+### Invoice Auto-Request Generation
+#### [MODIFY] `src/main/java/com/rev/app/service/IInvoiceServiceImpl.java`
+- Inject `IMoneyRequestService` into the constructor.
+- In `createInvoice()`, immediately after `invoice = invoiceRepository.save(invoice)`, look up the `invoice.getCustomerEmail()` in the `userRepository`.
+- If the customer is a valid `User` in the system, automatically call `moneyRequestService.sendRequest(businessUserId, customerUser.getId(), invoice.getTotalAmount(), "Invoice Payment: " + invoice.getInvoiceNumber())`.
 
 ## Verification Plan
+
 ### Automated Tests
-- Run `mvn test` to execute all unit and integration tests.
+- The backend tests `WalletRestControllerTest`, `IWalletServiceImplTest`, and `IInvoiceServiceImplTest` will fail if their method signatures change. We must run these tests and adapt them by mocking the `PasswordEncoder` and injecting the new `transactionPin` arguments.
+- Steps to test: `mvn test -Dtest=WalletRestControllerTest` and `mvn test -Dtest=IWalletServiceImplTest` 
+
 ### Manual Verification
-1. Start the app (`mvn spring-boot:run`).
-2. Register a new personal user, log in, and confirm the dashboard shows the user’s name, wallet balance, and recent transactions.
-3. Verify the UI is simple and functional.
+1. Open the application locally and log into a user account.
+2. Navigate to "My Wallet" (`/wallet`).
+3. View the fetched Payment Methods in the dropdown.
+4. Try adding funds with an incorrect PIN to see the error, then with the correct PIN to verify success.
+5. Log into a Business account. Generate an invoice directed to the personal user's email.
+6. Log back into the personal user's account and check the `/money-request` or dashboard page to ensure a `MoneyRequest` was automatically created from the invoice trigger.

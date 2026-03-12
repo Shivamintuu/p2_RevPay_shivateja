@@ -59,13 +59,14 @@ class AdminRestControllerTest {
     }
 
     @Test
-    void getAllUsers_Success() {
-        when(userRepository.findAll()).thenReturn(Collections.emptyList());
+    void getAllUsersPaginated_Success() {
+        org.springframework.data.domain.Page<UserDTO> emptyPage = new org.springframework.data.domain.PageImpl<>(java.util.Collections.emptyList());
+        when(userService.getAllUsersPaginated(0, 10, "id", "asc", "")).thenReturn(emptyPage);
 
-        ResponseEntity<List<UserDTO>> response = adminRestController.getAllUsers();
+        ResponseEntity<org.springframework.data.domain.Page<UserDTO>> response = adminRestController.getAllUsersPaginated(0, 10, "id", "asc", "");
 
         assertEquals(HttpStatus.OK, response.getStatusCode());
-        assertEquals(0, response.getBody().size());
+        assertEquals(0, response.getBody().getContent().size());
     }
 
     @Test

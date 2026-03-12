@@ -26,6 +26,8 @@ public class UserMapper {
         dto.setTaxId(user.getTaxId());
         dto.setBusinessAddress(user.getBusinessAddress());
         dto.setIsBusinessVerified(user.getIsBusinessVerified());
+        
+        dto.setIsActive(user.getIsActive());
 
         return dto;
     }
@@ -49,6 +51,10 @@ public class UserMapper {
         user.setTaxId(dto.getTaxId());
         user.setBusinessAddress(dto.getBusinessAddress());
         user.setIsBusinessVerified(dto.getIsBusinessVerified());
+        
+        if (dto.getIsActive() != null) {
+            user.setIsActive(dto.getIsActive());
+        }
         
         // Note: Password & Transaction PIN aren't moved here to prevent overriding 
         // with nulls during updates from DTO to Entity.

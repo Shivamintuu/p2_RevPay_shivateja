@@ -9,10 +9,12 @@ import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 
+import java.io.Serializable;
+
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class UserDTO {
+public class UserDTO implements Serializable {
     private Long id;
     
     @NotBlank(message = "Full name is required")
@@ -39,6 +41,9 @@ public class UserDTO {
     private String taxId;
     private String businessAddress;
     private Boolean isBusinessVerified;
+    
+    // Account Status
+    private Boolean isActive = true;
     
     @NotBlank(message = "Transaction PIN is required")
     @Size(min = 4, max = 6, message = "PIN must be between 4 and 6 digits")

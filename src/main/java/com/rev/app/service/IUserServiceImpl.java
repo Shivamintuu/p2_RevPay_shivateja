@@ -17,6 +17,11 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.cache.annotation.CacheEvict;
 import lombok.extern.slf4j.Slf4j;
@@ -120,6 +125,15 @@ public class IUserServiceImpl implements IUserService {
     }
 
     @Override
+    public Page<UserDTO> getAllUsersPaginated(int page, int size, String sortBy, String sortDir, String search) {
+        Sort sort = sortDir.equalsIgnoreCase(Sort.Direction.ASC.name()) ? Sort.by(sortBy).ascending()
+                : Sort.by(sortBy).descending();
+        Pageable pageable = PageRequest.of(page, size, sort);
+        Page<User> usersPage = userRepository.searchUsers(search, pageable);
+        return usersPage.map(userMapper::toDTO);
+    }
+
+    @Override
     @Transactional
     @CacheEvict(value = "users", key = "#id")
     public UserDTO updateUser(Long id, UserDTO userDTO) {
@@ -157,6 +171,10 @@ public class IUserServiceImpl implements IUserService {
         user.setRole(role);
         user.setPassword(passwordEncoder.encode(password));
         
+        if (userDTO.getIsActive() != null) {
+            user.setIsActive(userDTO.getIsActive());
+        }
+        
         if (role == Role.BUSINESS) {
             user.setIsBusinessVerified(userDTO.getIsBusinessVerified() != null ? userDTO.getIsBusinessVerified() : true);
         }
@@ -181,7 +199,7 @@ public class IUserServiceImpl implements IUserService {
         existingUser.setFullName(userDTO.getFullName());
         existingUser.setPhoneNumber(userDTO.getPhoneNumber());
         existingUser.setRole(role);
-        // Add minimal activation concept or leave as is. Assuming we just update role.
+        existingUser.setIsActive(isActive);
         
         if (newPassword != null && !newPassword.trim().isEmpty()) {
             existingUser.setPassword(passwordEncoder.encode(newPassword));

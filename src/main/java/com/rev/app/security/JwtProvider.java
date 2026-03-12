@@ -18,7 +18,7 @@ public class JwtProvider {
 
     // Using a securely generated key for HS256
     private final SecretKey jwtSecret = Keys.secretKeyFor(SignatureAlgorithm.HS256);
-    private final int jwtExpirationMs = 86400000; // 24 hours
+    private final int jwtExpirationMs = 86400000;
 
     public String generateToken(UserDetails userDetails) {
         Map<String, Object> claims = new HashMap<>();

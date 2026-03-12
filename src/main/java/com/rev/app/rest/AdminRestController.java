@@ -60,11 +60,13 @@ public class AdminRestController {
     }
 
     @GetMapping("/users")
-    public ResponseEntity<List<UserDTO>> getAllUsers() {
-        List<UserDTO> users = userRepository.findAll().stream()
-            .map(userMapper::toDTO)
-            .collect(Collectors.toList());
-        return ResponseEntity.ok(users);
+    public ResponseEntity<org.springframework.data.domain.Page<UserDTO>> getAllUsersPaginated(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "id") String sortBy,
+            @RequestParam(defaultValue = "asc") String sortDir,
+            @RequestParam(defaultValue = "", required = false) String search) {
+        return ResponseEntity.ok(userService.getAllUsersPaginated(page, size, sortBy, sortDir, search));
     }
 
     @PostMapping("/users/{userId}/balance/add")
@@ -97,6 +99,10 @@ public class AdminRestController {
         String password = (String) request.get("password");
         com.rev.app.entity.User.Role role = com.rev.app.entity.User.Role.valueOf(((String) request.get("role")).toUpperCase());
         
+        if (request.containsKey("isActive")) {
+            userDTO.setIsActive((Boolean) request.get("isActive"));
+        }
+        
         return ResponseEntity.ok(userService.adminCreateUser(userDTO, password, role));
     }
 
@@ -107,8 +113,8 @@ public class AdminRestController {
         String newPassword = (String) request.get("newPassword");
         com.rev.app.entity.User.Role role = com.rev.app.entity.User.Role.valueOf(((String) request.get("role")).toUpperCase());
         
-        // We simulate `isActive` from UI but right now it is not heavily used in backend schema without extra fields.
         boolean isActive = request.containsKey("isActive") ? (Boolean) request.get("isActive") : true;
+        userDTO.setIsActive(isActive);
 
         return ResponseEntity.ok(userService.adminUpdateUser(id, userDTO, newPassword, role, isActive));
     }

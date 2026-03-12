@@ -100,7 +100,14 @@
                     body: JSON.stringify({ email: email, password: password })
                 });
 
-                if (!response.ok) throw new Error('Invalid credentials');
+                if (!response.ok) {
+                    let errMsg = 'Invalid credentials';
+                    try {
+                        const errData = await response.json();
+                        errMsg = errData.message || errMsg;
+                    } catch (e) { }
+                    throw new Error(errMsg);
+                }
 
                 const data = await response.json();
                 if (data.requiresOtp) {

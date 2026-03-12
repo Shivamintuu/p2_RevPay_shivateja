@@ -40,6 +40,9 @@ class IInvoiceServiceImplTest {
     @Mock
     private INotificationService notificationService;
 
+    @Mock
+    private IMoneyRequestService moneyRequestService;
+
     @InjectMocks
     private IInvoiceServiceImpl invoiceService;
 

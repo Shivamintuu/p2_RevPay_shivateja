@@ -61,6 +61,7 @@ class AuthRestControllerTest {
     }
 
     @Test
+    @SuppressWarnings("unchecked")
     void login_Success() {
         AuthRestController.LoginRequest request = new AuthRestController.LoginRequest();
         request.setEmail("test@test.com");

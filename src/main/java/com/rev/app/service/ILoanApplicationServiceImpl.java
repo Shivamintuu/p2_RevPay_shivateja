@@ -99,7 +99,7 @@ public class ILoanApplicationServiceImpl implements ILoanApplicationService {
 
         if (status == LoanStatus.APPROVED) {
             // Deposit funds to wallet
-            walletService.addFunds(loan.getBusinessUser().getId(), loan.getAmount(), null);
+            walletService.adminAddFunds(loan.getBusinessUser().getId(), loan.getAmount());
         }
 
         return loanApplicationMapper.toDTO(loanApplicationRepository.save(loan));

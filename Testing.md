@@ -16,5 +16,6 @@ RevPay follows a comprehensive testing approach to ensure reliability and securi
 
 ## 4. Manual Verification Steps
 1. **Registration:** Register as a PERSONAL user and verify automatic wallet creation.
-2. **Transfer:** Perform a transfer and verify the "Successful" status and balance deduction.
-3. **Responsive UI:** Verify dashboard elements adjust correctly on smaller screens.
+2. **Two-Factor Authentication (2FA):** Verify that an OTP is sent to the registered email upon login and required for access.
+3. **Transfer:** Perform a transfer and verify the "Successful" status and balance deduction.
+4. **Responsive UI & Feedback:** Verify dashboard elements adjust correctly on smaller screens. Confirm that form submissions trigger button loading spinners and disable buttons to prevent duplicate requests.

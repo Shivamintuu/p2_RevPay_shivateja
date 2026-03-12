@@ -34,7 +34,7 @@
                 style="display: flex; align-items: center; gap: 20px; padding: 25px; border-left: 4px solid #22c55e;">
                 <div style="font-size: 2.5rem; color: #22c55e;">💳</div>
                 <div>
-                    <div style="font-size: 1.8rem; font-weight: 800; color: #1e1b4b;" id="metricTotalVolume">$0.00</div>
+                    <div style="font-size: 1.8rem; font-weight: 800; color: #1e1b4b;" id="metricTotalVolume">₹0.00</div>
                     <div style="color: #64748b; font-size: 0.9rem; font-weight: 600; text-transform: uppercase;">Total
                         Volume</div>
                 </div>
@@ -69,21 +69,37 @@
                     <h3 style="margin: 0; color: #1e1b4b; font-size: 1.3rem;">Registered Users</h3>
                     <span style="font-size: 0.9rem; color: var(--text-secondary);">System Registry</span>
                 </div>
-                <!-- CREATE USER BUTTON -->
-                <button onclick="openUserModal()" class="btn" style="background:var(--primary-color); display:flex; align-items:center; gap:8px;">
-                    <span style="font-size: 1.2rem;">+</span> Create User
-                </button>
+                <!-- Controls: Search & Create -->
+                <div style="display: flex; gap: 15px; align-items: center;">
+                    <div style="position: relative;">
+                        <!-- Search Icon -->
+                        <span
+                            style="position: absolute; left: 10px; top: 50%; transform: translateY(-50%); color: #64748b;">🔍</span>
+                        <input type="text" id="userSearchInput"
+                            placeholder="Search by name, email, role, phone, or status..." onkeyup="handleUserSearch()"
+                            style="padding: 8px 10px 8px 35px; border: 1px solid #cbd5e1; border-radius: 6px; width: 340px;">
+                    </div>
+                    <!-- CREATE USER BUTTON -->
+                    <button onclick="openUserModal()" class="btn"
+                        style="background:var(--primary-color); display:flex; align-items:center; gap:8px;">
+                        <span style="font-size: 1.2rem;">+</span> Create User
+                    </button>
+                </div>
             </div>
 
             <div style="overflow-x: auto;">
                 <table style="width: 100%; border-collapse: collapse; text-align: left;">
                     <thead>
                         <tr
-                            style="border-bottom: 2px solid #e2e8f0; color: #64748b; font-size: 0.85rem; text-transform: uppercase;">
-                            <th style="padding: 15px 10px;">ID</th>
-                            <th style="padding: 15px 10px;">Full Name</th>
-                            <th style="padding: 15px 10px;">Email</th>
-                            <th style="padding: 15px 10px;">Role</th>
+                            style="border-bottom: 2px solid #e2e8f0; color: #64748b; font-size: 0.85rem; text-transform: uppercase; user-select: none;">
+                            <th style="padding: 15px 10px; cursor: pointer;" onclick="sortByColumn('id')">ID<span
+                                    id="sort-icon-id"> &uarr;</span></th>
+                            <th style="padding: 15px 10px; cursor: pointer;" onclick="sortByColumn('fullName')">Full
+                                Name<span id="sort-icon-fullName"></span></th>
+                            <th style="padding: 15px 10px; cursor: pointer;" onclick="sortByColumn('email')">Email<span
+                                    id="sort-icon-email"></span></th>
+                            <th style="padding: 15px 10px; cursor: pointer;" onclick="sortByColumn('role')">Role<span
+                                    id="sort-icon-role"></span></th>
                             <th style="padding: 15px 10px;">Status</th>
                             <th style="padding: 15px 10px;">Actions</th>
                         </tr>
@@ -95,6 +111,7 @@
                         </tr>
                     </tbody>
                 </table>
+                <div id="paginationControls"></div>
             </div>
         </div>
 
@@ -129,57 +146,75 @@
         </div>
 
         <!-- Balance Modal -->
-        <div id="balanceModal" class="modal" style="display:none; position:fixed; z-index:1000; left:0; top:0; width:100%; height:100%; background-color:rgba(0,0,0,0.5);">
-            <div class="modal-content" style="background-color:#fff; margin:15% auto; padding:25px; border-radius:8px; width:90%; max-width:400px;">
+        <div id="balanceModal" class="modal"
+            style="display:none; position:fixed; z-index:1000; left:0; top:0; width:100%; height:100%; background-color:rgba(0,0,0,0.5);">
+            <div class="modal-content"
+                style="background-color:#fff; margin:15% auto; padding:25px; border-radius:8px; width:90%; max-width:400px;">
                 <h3 style="margin-top:0;">Adjust User Balance</h3>
                 <p style="color:#64748b; font-size:0.9rem;">Target: <strong id="adjustTargetName"></strong></p>
                 <input type="hidden" id="adjustTargetId">
-                
+
                 <div class="form-group" style="margin-bottom: 15px;">
                     <label>Amount ($)</label>
-                    <input type="number" id="adjustAmount" step="0.01" min="0.01" required style="width:100%; padding:10px; border:1px solid #cbd5e1; border-radius:6px;">
+                    <input type="number" id="adjustAmount" step="0.01" min="0.01" required
+                        style="width:100%; padding:10px; border:1px solid #cbd5e1; border-radius:6px;">
                 </div>
-                
+
                 <div id="adjustMsg" style="margin-bottom:15px; font-weight:500;"></div>
-                
+
                 <div style="display: flex; gap: 10px;">
-                    <button class="btn" onclick="adjustBalance('add')" style="flex: 1; background:#10b981;">Add Funds</button>
-                    <button class="btn" onclick="adjustBalance('deduct')" style="flex: 1; background:#ef4444;">Deduct Funds</button>
-                    <button class="btn" onclick="closeModal('balanceModal')" style="flex: 1; background: #94a3b8;">Cancel</button>
+                    <button class="btn" onclick="adjustBalance('add')" style="flex: 1; background:#10b981;">Add
+                        Funds</button>
+                    <button class="btn" onclick="adjustBalance('deduct')" style="flex: 1; background:#ef4444;">Deduct
+                        Funds</button>
+                    <button class="btn" onclick="closeModal('balanceModal')"
+                        style="flex: 1; background: #94a3b8;">Cancel</button>
                 </div>
             </div>
         </div>
 
         <!-- User Management Modal -->
-        <div id="userModal" class="modal" style="display:none; position:fixed; z-index:1000; left:0; top:0; width:100%; height:100%; background-color:rgba(0,0,0,0.5); overflow-y:auto;">
-            <div class="modal-content" style="background-color:#fff; margin:5% auto; padding:30px; border-radius:12px; width:90%; max-width:600px; position:relative;">
-                <button onclick="closeModal('userModal')" style="position:absolute; right:20px; top:20px; background:none; border:none; font-size:1.5rem; cursor:pointer;">&times;</button>
-                
+        <div id="userModal" class="modal"
+            style="display:none; position:fixed; z-index:1000; left:0; top:0; width:100%; height:100%; background-color:rgba(0,0,0,0.5); overflow-y:auto;">
+            <div class="modal-content"
+                style="background-color:#fff; margin:5% auto; padding:30px; border-radius:12px; width:90%; max-width:600px; position:relative;">
+                <button onclick="closeModal('userModal')"
+                    style="position:absolute; right:20px; top:20px; background:none; border:none; font-size:1.5rem; cursor:pointer;">&times;</button>
+
                 <h3 id="userModalTitle" style="margin-top:0; color:#1e1b4b; font-size:1.5rem;">Create User</h3>
-                <p style="color:#64748b; font-size:0.9rem; margin-bottom:20px;">Use this form to add or modify a system user.</p>
-                
+                <p style="color:#64748b; font-size:0.9rem; margin-bottom:20px;">Use this form to add or modify a system
+                    user.</p>
+
                 <form id="userForm" onsubmit="handleUserSubmit(event)">
                     <input type="hidden" id="editUserId">
-                    
+
                     <div style="display:grid; grid-template-columns: 1fr 1fr; gap:15px; margin-bottom:15px;">
                         <div class="form-group">
-                            <label style="display:block; margin-bottom:5px; font-weight:600; font-size:0.9rem;">Full Name</label>
-                            <input type="text" id="userFullName" required style="width:100%; padding:10px; border:1px solid #cbd5e1; border-radius:6px;">
+                            <label style="display:block; margin-bottom:5px; font-weight:600; font-size:0.9rem;">Full
+                                Name</label>
+                            <input type="text" id="userFullName" required
+                                style="width:100%; padding:10px; border:1px solid #cbd5e1; border-radius:6px;">
                         </div>
                         <div class="form-group">
-                            <label style="display:block; margin-bottom:5px; font-weight:600; font-size:0.9rem;">Email</label>
-                            <input type="email" id="userEmail" required style="width:100%; padding:10px; border:1px solid #cbd5e1; border-radius:6px;">
+                            <label
+                                style="display:block; margin-bottom:5px; font-weight:600; font-size:0.9rem;">Email</label>
+                            <input type="email" id="userEmail" required
+                                style="width:100%; padding:10px; border:1px solid #cbd5e1; border-radius:6px;">
                         </div>
                     </div>
 
                     <div style="display:grid; grid-template-columns: 1fr 1fr; gap:15px; margin-bottom:15px;">
                         <div class="form-group">
-                            <label style="display:block; margin-bottom:5px; font-weight:600; font-size:0.9rem;">Phone Number</label>
-                            <input type="text" id="userPhone" required style="width:100%; padding:10px; border:1px solid #cbd5e1; border-radius:6px;">
+                            <label style="display:block; margin-bottom:5px; font-weight:600; font-size:0.9rem;">Phone
+                                Number</label>
+                            <input type="text" id="userPhone" required
+                                style="width:100%; padding:10px; border:1px solid #cbd5e1; border-radius:6px;">
                         </div>
                         <div class="form-group">
-                            <label style="display:block; margin-bottom:5px; font-weight:600; font-size:0.9rem;">Role</label>
-                            <select id="userRole" onchange="toggleBusinessFields()" style="width:100%; padding:10px; border:1px solid #cbd5e1; border-radius:6px;">
+                            <label
+                                style="display:block; margin-bottom:5px; font-weight:600; font-size:0.9rem;">Role</label>
+                            <select id="userRole" onchange="toggleBusinessFields()"
+                                style="width:100%; padding:10px; border:1px solid #cbd5e1; border-radius:6px;">
                                 <option value="PERSONAL">PERSONAL</option>
                                 <option value="BUSINESS">BUSINESS</option>
                                 <option value="ADMIN">ADMIN</option>
@@ -189,40 +224,69 @@
 
                     <div style="display:grid; grid-template-columns: 1fr 1fr; gap:15px; margin-bottom:15px;">
                         <div class="form-group">
-                            <label style="display:block; margin-bottom:5px; font-weight:600; font-size:0.9rem;">Security Question</label>
-                            <input type="text" id="userSecQ" required placeholder="e.g. Favorite Pet" style="width:100%; padding:10px; border:1px solid #cbd5e1; border-radius:6px;">
+                            <label style="display:block; margin-bottom:5px; font-weight:600; font-size:0.9rem;">Security
+                                Question</label>
+                            <input type="text" id="userSecQ" required placeholder="e.g. Favorite Pet"
+                                style="width:100%; padding:10px; border:1px solid #cbd5e1; border-radius:6px;">
                         </div>
                         <div class="form-group">
-                            <label style="display:block; margin-bottom:5px; font-weight:600; font-size:0.9rem;">Security Answer</label>
-                            <input type="text" id="userSecA" required style="width:100%; padding:10px; border:1px solid #cbd5e1; border-radius:6px;">
+                            <label style="display:block; margin-bottom:5px; font-weight:600; font-size:0.9rem;">Security
+                                Answer</label>
+                            <input type="text" id="userSecA" required
+                                style="width:100%; padding:10px; border:1px solid #cbd5e1; border-radius:6px;">
                         </div>
                     </div>
 
-                    <div class="form-group" style="margin-bottom: 20px;">
-                        <label style="display:block; margin-bottom:5px; font-weight:600; font-size:0.9rem;" id="userPasswordLabel">Password</label>
-                        <input type="password" id="userPassword" placeholder="Required for new users" style="width:100%; padding:10px; border:1px solid #cbd5e1; border-radius:6px;">
-                        <small style="color:#64748b;">Leave blank when editing an existing user to keep their current password.</small>
+                    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:15px; margin-bottom:20px;">
+                        <div class="form-group">
+                            <label style="display:block; margin-bottom:5px; font-weight:600; font-size:0.9rem;">Account
+                                Status</label>
+                            <select id="userStatus"
+                                style="width:100%; padding:10px; border:1px solid #cbd5e1; border-radius:6px;">
+                                <option value="true">Active</option>
+                                <option value="false">Inactive / Suspended</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label style="display:block; margin-bottom:5px; font-weight:600; font-size:0.9rem;"
+                                id="userPasswordLabel">Password</label>
+                            <input type="password" id="userPassword" placeholder="Required for new users"
+                                style="width:100%; padding:10px; border:1px solid #cbd5e1; border-radius:6px;">
+                            <small style="color:#64748b; font-size:0.75rem;">Leave blank when editing an existing
+                                user.</small>
+                        </div>
                     </div>
 
                     <!-- Business Only Fields -->
-                    <div id="businessFields" style="display:none; background:#f8fafc; padding:15px; border-radius:8px; margin-bottom:20px; border:1px solid #e2e8f0;">
-                        <h4 style="margin-top:0; font-size:1rem; color:#334155; margin-bottom:15px;">Business Information</h4>
+                    <div id="businessFields"
+                        style="display:none; background:#f8fafc; padding:15px; border-radius:8px; margin-bottom:20px; border:1px solid #e2e8f0;">
+                        <h4 style="margin-top:0; font-size:1rem; color:#334155; margin-bottom:15px;">Business
+                            Information</h4>
                         <div style="display:grid; grid-template-columns: 1fr 1fr; gap:15px; margin-bottom:15px;">
                             <div class="form-group">
-                                <label style="display:block; margin-bottom:5px; font-weight:600; font-size:0.85rem;">Business Name</label>
-                                <input type="text" id="bizName" style="width:100%; padding:8px; border:1px solid #cbd5e1; border-radius:6px;">
+                                <label
+                                    style="display:block; margin-bottom:5px; font-weight:600; font-size:0.85rem;">Business
+                                    Name</label>
+                                <input type="text" id="bizName"
+                                    style="width:100%; padding:8px; border:1px solid #cbd5e1; border-radius:6px;">
                             </div>
                             <div class="form-group">
-                                <label style="display:block; margin-bottom:5px; font-weight:600; font-size:0.85rem;">Business Type</label>
-                                <input type="text" id="bizType" style="width:100%; padding:8px; border:1px solid #cbd5e1; border-radius:6px;">
+                                <label
+                                    style="display:block; margin-bottom:5px; font-weight:600; font-size:0.85rem;">Business
+                                    Type</label>
+                                <input type="text" id="bizType"
+                                    style="width:100%; padding:8px; border:1px solid #cbd5e1; border-radius:6px;">
                             </div>
                         </div>
                         <div class="form-group">
-                            <label style="display:block; margin-bottom:5px; font-weight:600; font-size:0.85rem;">Tax ID (EIN)</label>
-                            <input type="text" id="bizTax" style="width:100%; padding:8px; border:1px solid #cbd5e1; border-radius:6px;">
+                            <label style="display:block; margin-bottom:5px; font-weight:600; font-size:0.85rem;">Tax ID
+                                (EIN)</label>
+                            <input type="text" id="bizTax"
+                                style="width:100%; padding:8px; border:1px solid #cbd5e1; border-radius:6px;">
                         </div>
                         <div class="form-group" style="margin-top:15px;">
-                            <label style="display:flex; align-items:center; gap:8px; font-weight:600; font-size:0.9rem; cursor:pointer;">
+                            <label
+                                style="display:flex; align-items:center; gap:8px; font-weight:600; font-size:0.9rem; cursor:pointer;">
                                 <input type="checkbox" id="bizVerified" style="width:16px; height:16px;">
                                 Business Document Verified
                             </label>
@@ -230,8 +294,10 @@
                     </div>
 
                     <div id="userFormMsg" style="margin-bottom:15px; font-weight:500;"></div>
-                    
-                    <button type="submit" class="btn btn-primary" id="saveUserBtn" style="width:100%; padding:12px; font-size:1.1rem; border-radius:8px;">Save User Details</button>
+
+                    <button type="submit" class="btn btn-primary" id="saveUserBtn"
+                        style="width:100%; padding:12px; font-size:1.1rem; border-radius:8px;">Save User
+                        Details</button>
                 </form>
             </div>
         </div>
@@ -240,35 +306,45 @@
     <div th:replace="~{fragments/layout :: footerFragment}"></div>
 
     <script>
-        document.addEventListener('DOMContentLoaded', async () => {
-            const userStr = sessionStorage.getItem('user');
+        let currentPage = 0;
+        let currentSortBy = 'id';
+        let currentSortDir = 'asc';
+        let currentSearchTerm = '';
+        let searchTimeout = null;
+        const pageSize = 10;
+        let allUsersData = [];
 
-            if (!userStr || JSON.parse(userStr).role !== 'ADMIN') {
-                document.body.innerHTML = "<h2 style='text-align:center; padding: 50px; color:red;'>Access Denied. Admins Only.</h2>";
-                return;
-            }
+        function formatCurrency(value) {
+            if (value === null || value === undefined) return '₹0.00';
+            const num = parseFloat(value);
+            if (num >= 1e9) return '₹' + (num / 1e9).toFixed(2) + 'B';
+            if (num >= 1e6) return '₹' + (num / 1e6).toFixed(2) + 'M';
+            if (num >= 1000) return '₹' + (num / 1e3).toFixed(2) + 'K';
+            return '₹' + num.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        }
 
-            try {
-                // Fetch metrics
-                const metricsRes = await fetchWithAuth('/api/admin/metrics');
-                if (metricsRes.ok) {
-                    const metrics = await metricsRes.json();
-                    document.getElementById('metricTotalUsers').innerText = metrics.totalUsers || 0;
-                    document.getElementById('metricTotalVolume').innerText = `$${(metrics.totalVolume || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-                    document.getElementById('metricTotalTx').innerText = metrics.totalTransactions || 0;
-
-                    const statusEl = document.getElementById('metricSystemStatus');
-                    statusEl.innerText = metrics.systemStatus || 'Unknown';
-                    statusEl.style.color = '#16a34a';
+        function handleUserSearch() {
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(() => {
+                const searchVal = document.getElementById('userSearchInput').value.trim();
+                if (currentSearchTerm !== searchVal) {
+                    currentSearchTerm = searchVal;
+                    currentPage = 0; // reset to first page on new search
+                    fetchUsers();
                 }
+            }, 400); // 400ms debounce
+        }
 
-                // Fetch users
-                const usersRes = await fetchWithAuth('/api/admin/users');
+        async function fetchUsers() {
+            try {
+                const encodedSearch = encodeURIComponent(currentSearchTerm);
+                const usersRes = await fetchWithAuth(`/api/admin/users?page=${currentPage}&size=${pageSize}&sortBy=${currentSortBy}&sortDir=${currentSortDir}&search=${encodedSearch}`);
                 if (usersRes.ok) {
-                    const users = await usersRes.json();
-                    allUsersData = users; // Cache for modal use
+                    const pageData = await usersRes.json();
+                    allUsersData = pageData.content; // Cache for modal use
+                    const users = pageData.content;
                     const tbody = document.getElementById('userTableBody');
-                    
+
                     if (users.length === 0) {
                         tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding: 20px;">No users found.</td></tr>';
                     } else {
@@ -288,7 +364,9 @@
                                         </span>
                                     </td>
                                     <td style="padding: 15px 10px;">
-                                        <span style="color: #10b981; font-weight: 600; font-size: 0.85rem;">Active</span>
+                                        ${u.isActive !== false ?
+                                    '<span style="color: #10b981; font-weight: 600; font-size: 0.85rem;">Active</span>' :
+                                    '<span style="color: #ef4444; font-weight: 600; font-size: 0.85rem;">Inactive</span>'}
                                     </td>
                                     <td style="padding: 15px 10px;">
                                         <button onclick="openUserModal(${u.id})" class="btn btn-sm" style="background:#3b82f6; font-size: 0.8rem; padding: 4px 8px; margin-right:5px;">Edit Profile</button>
@@ -298,14 +376,93 @@
                             `;
                         });
                     }
+                    renderPagination(pageData.totalPages);
                 }
+            } catch (err) {
+                console.error("Failed to fetch users", err);
+            }
+        }
+
+        function renderPagination(totalPages) {
+            const pgi = document.getElementById('paginationControls');
+            if (!pgi) return;
+            if (totalPages <= 1) {
+                pgi.innerHTML = '';
+                return;
+            }
+            let html = `<div style="display:flex; justify-content:center; gap:5px; margin-top:20px;">`;
+            html += `<button class="btn btn-sm" style="padding: 6px 12px; background: ${currentPage === 0 ? '#cbd5e1' : '#3b82f6'}; cursor: ${currentPage === 0 ? 'not-allowed' : 'pointer'};" onclick="changePage(${currentPage - 1})" ${currentPage === 0 ? 'disabled' : ''}>Prev</button>`;
+
+            for (let i = 0; i < totalPages; i++) {
+                html += `<button class="btn btn-sm" style="padding: 6px 12px; background: ${currentPage === i ? '#1e3a8a' : '#3b82f6'}" onclick="changePage(${i})">${i + 1}</button>`;
+            }
+
+            html += `<button class="btn btn-sm" style="padding: 6px 12px; background: ${currentPage === totalPages - 1 ? '#cbd5e1' : '#3b82f6'}; cursor: ${currentPage === totalPages - 1 ? 'not-allowed' : 'pointer'};" onclick="changePage(${currentPage + 1})" ${currentPage === totalPages - 1 ? 'disabled' : ''}>Next</button>`;
+            html += `</div>`;
+            pgi.innerHTML = html;
+        }
+
+        function changePage(page) {
+            currentPage = page;
+            fetchUsers();
+        }
+
+        function sortByColumn(col) {
+            if (currentSortBy === col) {
+                currentSortDir = currentSortDir === 'asc' ? 'desc' : 'asc';
+            } else {
+                currentSortBy = col;
+                currentSortDir = 'asc';
+            }
+            currentPage = 0;
+            fetchUsers();
+            updateSortIcons();
+        }
+
+        function updateSortIcons() {
+            const cols = ['id', 'fullName', 'email', 'role'];
+            cols.forEach(c => {
+                const icon = document.getElementById('sort-icon-' + c);
+                if (icon) {
+                    if (currentSortBy === c) {
+                        icon.innerHTML = currentSortDir === 'asc' ? ' &uarr;' : ' &darr;';
+                    } else {
+                        icon.innerHTML = '';
+                    }
+                }
+            });
+        }
+        document.addEventListener('DOMContentLoaded', async () => {
+            const userStr = sessionStorage.getItem('user');
+
+            if (!userStr || JSON.parse(userStr).role !== 'ADMIN') {
+                document.body.innerHTML = "<h2 style='text-align:center; padding: 50px; color:red;'>Access Denied. Admins Only.</h2>";
+                return;
+            }
+
+            try {
+                // Fetch metrics
+                const metricsRes = await fetchWithAuth('/api/admin/metrics');
+                if (metricsRes.ok) {
+                    const metrics = await metricsRes.json();
+                    document.getElementById('metricTotalUsers').innerText = metrics.totalUsers || 0;
+                    document.getElementById('metricTotalVolume').innerText = formatCurrency(metrics.totalVolume);
+                    document.getElementById('metricTotalTx').innerText = metrics.totalTransactions || 0;
+
+                    const statusEl = document.getElementById('metricSystemStatus');
+                    statusEl.innerText = metrics.systemStatus || 'Unknown';
+                    statusEl.style.color = '#16a34a';
+                }
+
+                // Fetch users paginated
+                await fetchUsers();
 
                 // Fetch Loans
                 const loansRes = await fetchWithAuth('/api/admin/loans');
                 if (loansRes.ok) {
                     const loans = await loansRes.json();
                     const tbody = document.getElementById('loanTableBody');
-                    if(loans.length === 0){
+                    if (loans.length === 0) {
                         tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding: 20px;">No loans found.</td></tr>';
                     } else {
                         tbody.innerHTML = '';
@@ -325,7 +482,7 @@
                                 <tr style="border-bottom: 1px solid #f1f5f9;">
                                     <td style="padding: 15px 10px; font-weight: 600; color: #64748b;">#${loan.id}</td>
                                     <td style="padding: 15px 10px;">User #${loan.businessUserId}</td>
-                                    <td style="padding: 15px 10px; font-weight: 600;">$${loan.amount.toLocaleString(undefined, { minimumFractionDigits: 2 })}</td>
+                                    <td style="padding: 15px 10px; font-weight: 600;">${formatCurrency(loan.amount)}</td>
                                     <td style="padding: 15px 10px; color: #475569;">${loan.purpose}</td>
                                     <td style="padding: 15px 10px;">
                                         <span style="background: ${statusBg}; color: ${statusColor}; padding: 4px 10px; border-radius: 12px; font-size: 0.75rem; font-weight: 700; text-transform: uppercase;">
@@ -344,7 +501,7 @@
             }
         });
 
-        let allUsersData = [];
+
 
         // Modals & Actions
         function openBalanceModal(userId, name) {
@@ -367,12 +524,12 @@
         function openUserModal(userId = null) {
             const msgDiv = document.getElementById('userFormMsg');
             msgDiv.innerText = '';
-            
-            if(userId) {
+
+            if (userId) {
                 // Editing existing user
                 document.getElementById('userModalTitle').innerText = 'Edit User Profile';
                 const user = allUsersData.find(u => u.id === userId);
-                if(user) {
+                if (user) {
                     document.getElementById('editUserId').value = user.id;
                     document.getElementById('userFullName').value = user.fullName || '';
                     document.getElementById('userEmail').value = user.email || '';
@@ -381,12 +538,13 @@
                     document.getElementById('userSecQ').value = user.securityQuestion || '';
                     document.getElementById('userSecA').value = user.securityAnswer || ''; // We might not get this from the API, but fill if present.
                     document.getElementById('userSecA').removeAttribute('required'); // Security Answer shouldn't be strictly required for updates
-                    
+                    document.getElementById('userStatus').value = user.isActive !== false ? "true" : "false";
+
                     document.getElementById('userPasswordLabel').innerText = 'Password (Optional)';
                     document.getElementById('userPassword').placeholder = 'Leave blank to keep unchanged';
                     document.getElementById('userPassword').removeAttribute('required');
 
-                    if(user.role === 'BUSINESS') {
+                    if (user.role === 'BUSINESS') {
                         document.getElementById('bizName').value = user.businessName || '';
                         document.getElementById('bizType').value = user.businessType || '';
                         document.getElementById('bizTax').value = user.taxId || '';
@@ -398,12 +556,13 @@
                 document.getElementById('userModalTitle').innerText = 'Create New User';
                 document.getElementById('userForm').reset();
                 document.getElementById('editUserId').value = '';
+                document.getElementById('userStatus').value = 'true';
                 document.getElementById('userPasswordLabel').innerText = 'Password';
                 document.getElementById('userPassword').placeholder = 'Required for new users';
                 document.getElementById('userPassword').setAttribute('required', 'true');
                 document.getElementById('userSecA').setAttribute('required', 'true');
             }
-            
+
             toggleBusinessFields();
             document.getElementById('userModal').style.display = 'block';
         }
@@ -425,10 +584,11 @@
                     securityQuestion: document.getElementById('userSecQ').value,
                     securityAnswer: document.getElementById('userSecA').value
                 },
-                role: document.getElementById('userRole').value
+                role: document.getElementById('userRole').value,
+                isActive: document.getElementById('userStatus').value === "true"
             };
 
-            if(payload.role === 'BUSINESS') {
+            if (payload.role === 'BUSINESS') {
                 payload.user.businessName = document.getElementById('bizName').value;
                 payload.user.businessType = document.getElementById('bizType').value;
                 payload.user.taxId = document.getElementById('bizTax').value;
@@ -436,14 +596,14 @@
             }
 
             // Only send password if provided (for edits) or required (for creations)
-            if(!userId || password.trim().length > 0) {
-                if(userId) {
+            if (!userId || password.trim().length > 0) {
+                if (userId) {
                     payload.newPassword = password;
                 } else {
                     payload.password = password;
                 }
             }
-            
+
             btn.disabled = true;
             btn.innerText = 'Saving...';
 

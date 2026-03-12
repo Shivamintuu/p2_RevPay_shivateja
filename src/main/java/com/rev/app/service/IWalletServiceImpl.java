@@ -15,6 +15,8 @@ import com.rev.app.repository.IWalletRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import com.rev.app.exception.InvalidCredentialsException;
 
 import java.math.BigDecimal;
 
@@ -32,15 +34,17 @@ public class IWalletServiceImpl implements IWalletService {
     private final WalletMapper walletMapper;
     private final ITransactionRepository transactionRepository;
     private final IEmailService emailService;
+    private final PasswordEncoder passwordEncoder;
 
     @Autowired
     public IWalletServiceImpl(IWalletRepository walletRepository, IUserRepository userRepository, WalletMapper walletMapper,
-                              ITransactionRepository transactionRepository, IEmailService emailService) {
+                              ITransactionRepository transactionRepository, IEmailService emailService, PasswordEncoder passwordEncoder) {
         this.walletRepository = walletRepository;
         this.userRepository = userRepository;
         this.walletMapper = walletMapper;
         this.transactionRepository = transactionRepository;
         this.emailService = emailService;
+        this.passwordEncoder = passwordEncoder;
     }
 
     @Override
@@ -74,11 +78,15 @@ public class IWalletServiceImpl implements IWalletService {
         @CacheEvict(value = "wallets", key = "#userId"),
         @CacheEvict(value = "analytics", key = "#userId")
     })
-    public WalletDTO addFunds(Long userId, BigDecimal amount, Long paymentMethodId) {
+    public WalletDTO addFunds(Long userId, BigDecimal amount, Long paymentMethodId, String transactionPin) {
         log.info("Adding {} funds to wallet for user ID: {}", amount, userId);
         
         Wallet wallet = walletRepository.findByUserId(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("Wallet not found for user: " + userId));
+
+        if (!passwordEncoder.matches(transactionPin, wallet.getUser().getTransactionPin())) {
+            throw new InvalidCredentialsException("Invalid Transaction PIN");
+        }
 
         if (amount.compareTo(BigDecimal.ZERO) <= 0) {
             log.error("Failed to add funds: Amount must be greater than zero for user ID: {}", userId);
@@ -124,11 +132,15 @@ public class IWalletServiceImpl implements IWalletService {
         @CacheEvict(value = "wallets", key = "#userId"),
         @CacheEvict(value = "analytics", key = "#userId")
     })
-    public WalletDTO withdrawFunds(Long userId, BigDecimal amount, Long paymentMethodId) {
+    public WalletDTO withdrawFunds(Long userId, BigDecimal amount, Long paymentMethodId, String transactionPin) {
         log.info("Withdrawing {} funds from wallet for user ID: {}", amount, userId);
         
         Wallet wallet = walletRepository.findByUserId(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("Wallet not found for user: " + userId));
+
+        if (!passwordEncoder.matches(transactionPin, wallet.getUser().getTransactionPin())) {
+            throw new InvalidCredentialsException("Invalid Transaction PIN");
+        }
 
         if (amount.compareTo(BigDecimal.ZERO) <= 0) {
             log.error("Failed to withdraw funds: Amount must be greater than zero for user ID: {}", userId);
@@ -251,6 +263,41 @@ public class IWalletServiceImpl implements IWalletService {
         
         emailService.sendTransactionNotification(wallet.getUser().getEmail(), 
                 "An administrator has deducted " + amount + " from your wallet.");
+
+        return walletMapper.toDTO(savedWallet);
+    }
+
+    @Override
+    @Transactional
+    @Caching(evict = {
+        @CacheEvict(value = "wallets", key = "#userId"),
+        @CacheEvict(value = "analytics", key = "#userId")
+    })
+    public WalletDTO razorpayAddFunds(Long userId, BigDecimal amount) {
+        log.info("Adding {} funds via Razorpay to wallet for user ID: {}", amount, userId);
+        
+        Wallet wallet = walletRepository.findByUserId(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("Wallet not found for user: " + userId));
+
+        if (amount.compareTo(BigDecimal.ZERO) <= 0) {
+            throw new IllegalArgumentException("Amount must be greater than zero");
+        }
+
+        wallet.setBalance(wallet.getBalance().add(amount));
+        Wallet savedWallet = walletRepository.save(wallet);
+
+        // Record Transaction
+        Transaction tx = new Transaction();
+        tx.setSender(wallet.getUser()); 
+        tx.setRecipient(wallet.getUser());
+        tx.setAmount(amount);
+        tx.setType(TransactionType.ADD_FUNDS);
+        tx.setStatus(TransactionStatus.COMPLETED);
+        tx.setNote("Added funds via Razorpay");
+        transactionRepository.save(tx);
+        
+        emailService.sendTransactionNotification(wallet.getUser().getEmail(), 
+                "You have successfully added $" + amount + " to your wallet via Razorpay.");
 
         return walletMapper.toDTO(savedWallet);
     }
