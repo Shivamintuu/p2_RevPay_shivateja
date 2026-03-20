@@ -1,6 +1,7 @@
 package com.rev.app.service;
 
 import com.rev.app.dto.TransactionDTO;
+import com.rev.app.entity.Transaction;
 import com.rev.app.entity.Transaction.TransactionType;
 
 import java.math.BigDecimal;
@@ -13,4 +14,6 @@ public interface ITransactionService {
     List<TransactionDTO> filterTransactions(Long userId, TransactionType type, String startDate, String endDate, BigDecimal minAmount, BigDecimal maxAmount, String status);
     List<TransactionDTO> searchTransactions(Long userId, String searchTerm);
     byte[] exportTransactionsToCSV(Long userId);
+    List<Transaction> getTransactionHistory(Long userId);
+    List<Transaction> getAllTransactions();
 }

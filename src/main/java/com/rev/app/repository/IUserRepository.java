@@ -35,7 +35,7 @@ public interface IUserRepository extends JpaRepository<User, Long> {
             "LOWER(u.phoneNumber) LIKE LOWER(CONCAT('%', :search, '%')) OR " +
             "(LOWER(:search) = 'active' AND (u.isActive = true OR u.isActive IS NULL)) OR " +
             "(LOWER(:search) = 'inactive' AND u.isActive = false))")
-    org.springframework.data.domain.Page<User> searchUsers(@org.springframework.data.repository.query.Param("search") String search, org.springframework.data.domain.Pageable pageable);
+    List<User> searchUsersList(@org.springframework.data.repository.query.Param("search") String search, org.springframework.data.domain.Sort sort);
 
     // Custom query methods
     Optional<User> findByEmail(String email);

@@ -6,6 +6,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -16,6 +17,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 
 @Configuration
 @EnableWebSecurity
+@EnableMethodSecurity // Enables SpEL expressions like @PreAuthorize
 public class SecurityConfig {
 
     private final JwtAuthFilter jwtAuthFilter;
@@ -38,11 +40,13 @@ public class SecurityConfig {
                 .requestMatchers("/", "/login", "/register", "/home", "/error", "/favicon.ico", "/css/**", "/js/**", "/img/**", "/images/**").permitAll()
                 .requestMatchers("/api/auth/**").permitAll()
                 .requestMatchers("/api/public/**").permitAll()
-                .requestMatchers("/admin/**", "/dashboard/**", "/wallet/**", "/transaction/**", "/user/**", "/invoice/**", "/loan/**", "/payment-method/**", "/money-request/**", "/cards/**", "/notifications/**", "/business/**").permitAll() 
+                // Allow UI routes to be public for now to avoid 403 on page load (Stateless JWT)
+                .requestMatchers("/dashboard/**", "/wallet/**", "/transaction/**", "/history/**", "/user/**", "/invoice/**", "/loan/**", "/payment-method/**", "/money-request/**", "/cards/**", "/notifications/**", "/business/**", "/admin/**").permitAll() 
+                // All other requests (mostly API) should be authenticated
                 .anyRequest().authenticated()
             )
             .sessionManagement(session -> session
-                .sessionCreationPolicy(SessionCreationPolicy.STATELESS) // Stateless sessions for JWT
+                .sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED) // Support sessions for Thymeleaf while keeping JWT
             )
             .addFilterBefore(rateLimitingFilter, UsernamePasswordAuthenticationFilter.class)
             .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);

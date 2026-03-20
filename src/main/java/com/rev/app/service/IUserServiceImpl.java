@@ -128,8 +128,15 @@ public class IUserServiceImpl implements IUserService {
     public Page<UserDTO> getAllUsersPaginated(int page, int size, String sortBy, String sortDir, String search) {
         Sort sort = sortDir.equalsIgnoreCase(Sort.Direction.ASC.name()) ? Sort.by(sortBy).ascending()
                 : Sort.by(sortBy).descending();
-        Pageable pageable = PageRequest.of(page, size, sort);
-        Page<User> usersPage = userRepository.searchUsers(search, pageable);
+                
+        // Fetch all matches to bypass Spring Data JPA Oracle 10g dialect fetch first row issue
+        List<User> allMatches = userRepository.searchUsersList(search, sort);
+        
+        int start = Math.min(page * size, allMatches.size());
+        int end = Math.min(start + size, allMatches.size());
+        List<User> pagedMatches = allMatches.subList(start, end);
+        
+        Page<User> usersPage = new org.springframework.data.domain.PageImpl<>(pagedMatches, PageRequest.of(page, size, sort), allMatches.size());
         return usersPage.map(userMapper::toDTO);
     }
 

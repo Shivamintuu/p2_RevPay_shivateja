@@ -1,187 +1,84 @@
-2026-03-12 07:55:29.897  INFO c.r.a.Revpay1Application                 : Starting Revpay1Application using Java 25.0.1 with PID 852 (C:\Users\ADMIN\Downloads\Revpay\Revpay1\target\classes started by ADMIN in C:\Users\ADMIN\Downloads\Revpay\Revpay1)
-2026-03-12 07:55:29.983 DEBUG c.r.a.Revpay1Application                 : Running with Spring Boot v4.0.3, Spring v7.0.5
-2026-03-12 07:55:29.987  INFO c.r.a.Revpay1Application                 : No active profile set, falling back to 1 default profile: "default"
-2026-03-12 07:55:30.710  INFO o.s.b.d.r.ChangeableUrls                 : The Class-Path manifest attribute in C:\Users\ADMIN\.m2\repository\com\oracle\database\jdbc\ojdbc11\23.9.0.25.07\ojdbc11-23.9.0.25.07.jar referenced one or more files that do not exist: file:/C:/Users/ADMIN/.m2/repository/com/oracle/database/jdbc/ojdbc11/23.9.0.25.07/oraclepki.jar
-2026-03-12 07:55:30.713  INFO .e.DevToolsPropertyDefaultsPostProcessor : Devtools property defaults active! Set 'spring.devtools.add-properties' to 'false' to disable
-2026-03-12 07:55:30.713  INFO .e.DevToolsPropertyDefaultsPostProcessor : For additional web related logging consider setting the 'logging.level.web' property to 'DEBUG'
-2026-03-12 07:55:30.844  INFO o.h.v.i.u.Version                        : HV000001: Hibernate Validator 9.0.1.Final
-2026-03-12 07:55:35.905  INFO .s.d.r.c.RepositoryConfigurationDelegate : Multiple Spring Data modules found, entering strict repository configuration mode
-2026-03-12 07:55:35.938  INFO .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
-2026-03-12 07:55:36.355  INFO .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 392 ms. Found 10 JPA repository interfaces.
-2026-03-12 07:55:36.409  INFO .s.d.r.c.RepositoryConfigurationDelegate : Multiple Spring Data modules found, entering strict repository configuration mode
-2026-03-12 07:55:36.413  INFO .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data Redis repositories in DEFAULT mode.
-2026-03-12 07:55:36.474  INFO .RepositoryConfigurationExtensionSupport : Spring Data Redis - Could not safely identify store assignment for repository candidate interface com.rev.app.repository.IDocumentRepository; If you want this repository to be a Redis repository, consider annotating your entities with one of these annotations: org.springframework.data.redis.core.RedisHash (preferred), or consider extending one of the following types with your repository: org.springframework.data.keyvalue.repository.KeyValueRepository
-2026-03-12 07:55:36.475  INFO .RepositoryConfigurationExtensionSupport : Spring Data Redis - Could not safely identify store assignment for repository candidate interface com.rev.app.repository.IInvoiceItemRepository; If you want this repository to be a Redis repository, consider annotating your entities with one of these annotations: org.springframework.data.redis.core.RedisHash (preferred), or consider extending one of the following types with your repository: org.springframework.data.keyvalue.repository.KeyValueRepository
-2026-03-12 07:55:36.480  INFO .RepositoryConfigurationExtensionSupport : Spring Data Redis - Could not safely identify store assignment for repository candidate interface com.rev.app.repository.IInvoiceRepository; If you want this repository to be a Redis repository, consider annotating your entities with one of these annotations: org.springframework.data.redis.core.RedisHash (preferred), or consider extending one of the following types with your repository: org.springframework.data.keyvalue.repository.KeyValueRepository
-2026-03-12 07:55:36.481  INFO .RepositoryConfigurationExtensionSupport : Spring Data Redis - Could not safely identify store assignment for repository candidate interface com.rev.app.repository.ILoanApplicationRepository; If you want this repository to be a Redis repository, consider annotating your entities with one of these annotations: org.springframework.data.redis.core.RedisHash (preferred), or consider extending one of the following types with your repository: org.springframework.data.keyvalue.repository.KeyValueRepository
-2026-03-12 07:55:36.482  INFO .RepositoryConfigurationExtensionSupport : Spring Data Redis - Could not safely identify store assignment for repository candidate interface com.rev.app.repository.IMoneyRequestRepository; If you want this repository to be a Redis repository, consider annotating your entities with one of these annotations: org.springframework.data.redis.core.RedisHash (preferred), or consider extending one of the following types with your repository: org.springframework.data.keyvalue.repository.KeyValueRepository
-2026-03-12 07:55:36.483  INFO .RepositoryConfigurationExtensionSupport : Spring Data Redis - Could not safely identify store assignment for repository candidate interface com.rev.app.repository.INotificationRepository; If you want this repository to be a Redis repository, consider annotating your entities with one of these annotations: org.springframework.data.redis.core.RedisHash (preferred), or consider extending one of the following types with your repository: org.springframework.data.keyvalue.repository.KeyValueRepository
-2026-03-12 07:55:36.484  INFO .RepositoryConfigurationExtensionSupport : Spring Data Redis - Could not safely identify store assignment for repository candidate interface com.rev.app.repository.IPaymentMethodRepository; If you want this repository to be a Redis repository, consider annotating your entities with one of these annotations: org.springframework.data.redis.core.RedisHash (preferred), or consider extending one of the following types with your repository: org.springframework.data.keyvalue.repository.KeyValueRepository
-2026-03-12 07:55:36.485  INFO .RepositoryConfigurationExtensionSupport : Spring Data Redis - Could not safely identify store assignment for repository candidate interface com.rev.app.repository.ITransactionRepository; If you want this repository to be a Redis repository, consider annotating your entities with one of these annotations: org.springframework.data.redis.core.RedisHash (preferred), or consider extending one of the following types with your repository: org.springframework.data.keyvalue.repository.KeyValueRepository
-2026-03-12 07:55:36.485  INFO .RepositoryConfigurationExtensionSupport : Spring Data Redis - Could not safely identify store assignment for repository candidate interface com.rev.app.repository.IUserRepository; If you want this repository to be a Redis repository, consider annotating your entities with one of these annotations: org.springframework.data.redis.core.RedisHash (preferred), or consider extending one of the following types with your repository: org.springframework.data.keyvalue.repository.KeyValueRepository
-2026-03-12 07:55:36.486  INFO .RepositoryConfigurationExtensionSupport : Spring Data Redis - Could not safely identify store assignment for repository candidate interface com.rev.app.repository.IWalletRepository; If you want this repository to be a Redis repository, consider annotating your entities with one of these annotations: org.springframework.data.redis.core.RedisHash (preferred), or consider extending one of the following types with your repository: org.springframework.data.keyvalue.repository.KeyValueRepository
-2026-03-12 07:55:36.486  INFO .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 32 ms. Found 0 Redis repository interfaces.
-2026-03-12 07:55:38.899  INFO o.s.b.t.TomcatWebServer                  : Tomcat initialized with port 8099 (http)
-2026-03-12 07:55:38.940  INFO o.a.c.h.Http11NioProtocol                : Initializing ProtocolHandler ["http-nio-8099"]
-2026-03-12 07:55:38.948  INFO o.a.c.c.StandardService                  : Starting service [Tomcat]
-2026-03-12 07:55:38.949  INFO o.a.c.c.StandardEngine                   : Starting Servlet engine: [Apache Tomcat/11.0.18]
-2026-03-12 07:55:39.141  INFO b.w.c.s.WebApplicationContextInitializer : Root WebApplicationContext: initialization completed in 8424 ms
-2026-03-12 07:55:41.344  INFO o.h.o.jpa                                : HHH008540: Processing PersistenceUnitInfo [name: default]
-2026-03-12 07:55:41.626  INFO o.h.o.core                               : HHH000001: Hibernate ORM core version 7.2.4.Final
-2026-03-12 07:55:43.441  INFO o.s.o.j.p.SpringPersistenceUnitInfo      : No LoadTimeWeaver setup: ignoring JPA class transformer
-2026-03-12 07:55:43.540  INFO c.z.h.HikariDataSource                   : HikariPool-1 - Starting...
-2026-03-12 07:55:46.875  INFO c.z.h.p.HikariPool                       : HikariPool-1 - Added connection oracle.jdbc.driver.T4CConnection@750c277d
-2026-03-12 07:55:46.896  INFO c.z.h.HikariDataSource                   : HikariPool-1 - Start completed.
-2026-03-12 07:55:48.483  WARN o.h.o.deprecation                        : HHH90000025: OracleDialect does not need to be specified explicitly using 'hibernate.dialect' (remove the property setting and it will be selected by default)
-2026-03-12 07:55:49.368  WARN o.h.o.jdbc                               : HHH100123: Low default JDBC fetch size: 10 (consider setting 'hibernate.jdbc.fetch_size')
-2026-03-12 07:55:49.385  INFO o.h.o.c.pooling                          : HHH10001005: Database info:
-	Database JDBC URL [jdbc:oracle:thin:@db.freesql.com:1521/23ai_34ui2]
+2026-03-20 10:18:06.778  INFO c.r.a.Revpay1Application                 : Starting Revpay1Application using Java 25.0.1 with PID 5108 (C:\Users\ADMIN\Downloads\Revpay\Revpay1\target\classes started by ADMIN in C:\Users\ADMIN\Downloads\Revpay\Revpay1)
+2026-03-20 10:18:06.863 DEBUG c.r.a.Revpay1Application                 : Running with Spring Boot v4.0.3, Spring v7.0.5
+2026-03-20 10:18:06.866  INFO c.r.a.Revpay1Application                 : No active profile set, falling back to 1 default profile: "default"
+2026-03-20 10:18:07.611  INFO o.s.b.d.r.ChangeableUrls                 : The Class-Path manifest attribute in C:\Users\ADMIN\.m2\repository\com\oracle\database\jdbc\ojdbc11\23.9.0.25.07\ojdbc11-23.9.0.25.07.jar referenced one or more files that do not exist: file:/C:/Users/ADMIN/.m2/repository/com/oracle/database/jdbc/ojdbc11/23.9.0.25.07/oraclepki.jar
+2026-03-20 10:18:07.613  INFO .e.DevToolsPropertyDefaultsPostProcessor : Devtools property defaults active! Set 'spring.devtools.add-properties' to 'false' to disable
+2026-03-20 10:18:07.613  INFO .e.DevToolsPropertyDefaultsPostProcessor : For additional web related logging consider setting the 'logging.level.web' property to 'DEBUG'
+2026-03-20 10:18:07.766  INFO o.h.v.i.u.Version                        : HV000001: Hibernate Validator 9.0.1.Final
+2026-03-20 10:18:17.086  INFO .s.d.r.c.RepositoryConfigurationDelegate : Multiple Spring Data modules found, entering strict repository configuration mode
+2026-03-20 10:18:17.173  INFO .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2026-03-20 10:18:18.946  INFO .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 1705 ms. Found 10 JPA repository interfaces.
+2026-03-20 10:18:20.965  INFO .s.d.r.c.RepositoryConfigurationDelegate : Multiple Spring Data modules found, entering strict repository configuration mode
+2026-03-20 10:18:20.971  INFO .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data Redis repositories in DEFAULT mode.
+2026-03-20 10:18:21.078  INFO .RepositoryConfigurationExtensionSupport : Spring Data Redis - Could not safely identify store assignment for repository candidate interface com.rev.app.repository.IDocumentRepository; If you want this repository to be a Redis repository, consider annotating your entities with one of these annotations: org.springframework.data.redis.core.RedisHash (preferred), or consider extending one of the following types with your repository: org.springframework.data.keyvalue.repository.KeyValueRepository
+2026-03-20 10:18:21.079  INFO .RepositoryConfigurationExtensionSupport : Spring Data Redis - Could not safely identify store assignment for repository candidate interface com.rev.app.repository.IInvoiceItemRepository; If you want this repository to be a Redis repository, consider annotating your entities with one of these annotations: org.springframework.data.redis.core.RedisHash (preferred), or consider extending one of the following types with your repository: org.springframework.data.keyvalue.repository.KeyValueRepository
+2026-03-20 10:18:21.090  INFO .RepositoryConfigurationExtensionSupport : Spring Data Redis - Could not safely identify store assignment for repository candidate interface com.rev.app.repository.IInvoiceRepository; If you want this repository to be a Redis repository, consider annotating your entities with one of these annotations: org.springframework.data.redis.core.RedisHash (preferred), or consider extending one of the following types with your repository: org.springframework.data.keyvalue.repository.KeyValueRepository
+2026-03-20 10:18:21.091  INFO .RepositoryConfigurationExtensionSupport : Spring Data Redis - Could not safely identify store assignment for repository candidate interface com.rev.app.repository.ILoanApplicationRepository; If you want this repository to be a Redis repository, consider annotating your entities with one of these annotations: org.springframework.data.redis.core.RedisHash (preferred), or consider extending one of the following types with your repository: org.springframework.data.keyvalue.repository.KeyValueRepository
+2026-03-20 10:18:21.092  INFO .RepositoryConfigurationExtensionSupport : Spring Data Redis - Could not safely identify store assignment for repository candidate interface com.rev.app.repository.IMoneyRequestRepository; If you want this repository to be a Redis repository, consider annotating your entities with one of these annotations: org.springframework.data.redis.core.RedisHash (preferred), or consider extending one of the following types with your repository: org.springframework.data.keyvalue.repository.KeyValueRepository
+2026-03-20 10:18:21.093  INFO .RepositoryConfigurationExtensionSupport : Spring Data Redis - Could not safely identify store assignment for repository candidate interface com.rev.app.repository.INotificationRepository; If you want this repository to be a Redis repository, consider annotating your entities with one of these annotations: org.springframework.data.redis.core.RedisHash (preferred), or consider extending one of the following types with your repository: org.springframework.data.keyvalue.repository.KeyValueRepository
+2026-03-20 10:18:21.093  INFO .RepositoryConfigurationExtensionSupport : Spring Data Redis - Could not safely identify store assignment for repository candidate interface com.rev.app.repository.IPaymentMethodRepository; If you want this repository to be a Redis repository, consider annotating your entities with one of these annotations: org.springframework.data.redis.core.RedisHash (preferred), or consider extending one of the following types with your repository: org.springframework.data.keyvalue.repository.KeyValueRepository
+2026-03-20 10:18:21.094  INFO .RepositoryConfigurationExtensionSupport : Spring Data Redis - Could not safely identify store assignment for repository candidate interface com.rev.app.repository.ITransactionRepository; If you want this repository to be a Redis repository, consider annotating your entities with one of these annotations: org.springframework.data.redis.core.RedisHash (preferred), or consider extending one of the following types with your repository: org.springframework.data.keyvalue.repository.KeyValueRepository
+2026-03-20 10:18:21.095  INFO .RepositoryConfigurationExtensionSupport : Spring Data Redis - Could not safely identify store assignment for repository candidate interface com.rev.app.repository.IUserRepository; If you want this repository to be a Redis repository, consider annotating your entities with one of these annotations: org.springframework.data.redis.core.RedisHash (preferred), or consider extending one of the following types with your repository: org.springframework.data.keyvalue.repository.KeyValueRepository
+2026-03-20 10:18:21.096  INFO .RepositoryConfigurationExtensionSupport : Spring Data Redis - Could not safely identify store assignment for repository candidate interface com.rev.app.repository.IWalletRepository; If you want this repository to be a Redis repository, consider annotating your entities with one of these annotations: org.springframework.data.redis.core.RedisHash (preferred), or consider extending one of the following types with your repository: org.springframework.data.keyvalue.repository.KeyValueRepository
+2026-03-20 10:18:21.097  INFO .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 65 ms. Found 0 Redis repository interfaces.
+2026-03-20 10:18:23.912  INFO o.s.b.t.TomcatWebServer                  : Tomcat initialized with port 8099 (http)
+2026-03-20 10:18:24.032  INFO o.a.c.h.Http11NioProtocol                : Initializing ProtocolHandler ["http-nio-8099"]
+2026-03-20 10:18:24.067  INFO o.a.c.c.StandardService                  : Starting service [Tomcat]
+2026-03-20 10:18:24.068  INFO o.a.c.c.StandardEngine                   : Starting Servlet engine: [Apache Tomcat/11.0.18]
+2026-03-20 10:18:24.431  INFO b.w.c.s.WebApplicationContextInitializer : Root WebApplicationContext: initialization completed in 16816 ms
+2026-03-20 10:18:25.424  INFO o.h.o.jpa                                : HHH008540: Processing PersistenceUnitInfo [name: default]
+2026-03-20 10:18:25.660  INFO o.h.o.core                               : HHH000001: Hibernate ORM core version 7.2.4.Final
+2026-03-20 10:18:30.255  INFO o.s.o.j.p.SpringPersistenceUnitInfo      : No LoadTimeWeaver setup: ignoring JPA class transformer
+2026-03-20 10:18:30.391  INFO c.z.h.HikariDataSource                   : HikariPool-1 - Starting...
+2026-03-20 10:18:31.667  INFO c.z.h.p.HikariPool                       : HikariPool-1 - Added connection oracle.jdbc.driver.T4CConnection@6b06db5f
+2026-03-20 10:18:31.672  INFO c.z.h.HikariDataSource                   : HikariPool-1 - Start completed.
+2026-03-20 10:18:32.536  WARN o.h.o.core                               : HHH000511: The 10.2.0 version for [org.hibernate.dialect.OracleDialect] is no longer supported, hence certain features may not work properly.The minimum supported version is 19.0.0. Check the community dialects project for available legacy versions.
+2026-03-20 10:18:32.553  WARN o.h.o.deprecation                        : HHH90000025: OracleDialect does not need to be specified explicitly using 'hibernate.dialect' (remove the property setting and it will be selected by default)
+2026-03-20 10:18:32.637  WARN o.h.o.jdbc                               : HHH100123: Low default JDBC fetch size: 10 (consider setting 'hibernate.jdbc.fetch_size')
+2026-03-20 10:18:32.657  INFO o.h.o.c.pooling                          : HHH10001005: Database info:
+	Database JDBC URL [jdbc:oracle:thin:@localhost:1521:SCOT]
 	Database driver: Oracle JDBC driver
 	Database dialect: OracleDialect
-	Database version: 23.9
-	Default catalog/schema: undefined/ASHIVATEJA2208_SCHEMA_J1A0D
+	Database version: 10.2
+	Default catalog/schema: undefined/SCOTT
 	Autocommit mode: undefined/unknown
 	Isolation level: READ_COMMITTED [default READ_COMMITTED]
 	JDBC fetch size: 10
 	Pool: DataSourceConnectionProvider
 	Minimum pool size: undefined/unknown
 	Maximum pool size: undefined/unknown
-2026-03-12 07:55:53.041  INFO o.h.o.core                               : HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
-2026-03-12 07:57:47.694  INFO j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
-2026-03-12 07:57:48.084  INFO o.s.d.j.r.q.QueryEnhancerFactories       : Hibernate is in classpath; If applicable, HQL parser will be used.
-2026-03-12 07:57:51.454 DEBUG c.r.a.s.RateLimitingFilter               : Filter 'rateLimitingFilter' configured for use
-2026-03-12 07:57:51.455 DEBUG c.r.a.s.JwtAuthFilter                    : Filter 'jwtAuthFilter' configured for use
-2026-03-12 07:57:53.029  INFO c.r.a.s.RazorpayService                  : Razorpay Client initialized successfully
-2026-03-12 07:57:53.431  WARN JpaBaseConfiguration$JpaWebConfiguration : spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
-2026-03-12 07:57:54.041  INFO o.s.b.w.a.WelcomePageHandlerMapping      : Adding welcome page template: index
-2026-03-12 07:57:55.487  INFO o.s.b.d.a.OptionalLiveReloadServer       : LiveReload server is running on port 35729
-2026-03-12 07:57:55.604  INFO o.a.c.h.Http11NioProtocol                : Starting ProtocolHandler ["http-nio-8099"]
-2026-03-12 07:57:55.634  INFO o.s.b.t.TomcatWebServer                  : Tomcat started on port 8099 (http) with context path '/'
-2026-03-12 07:57:55.658  INFO c.r.a.Revpay1Application                 : Started Revpay1Application in 147.54 seconds (process running for 152.388)
-2026-03-12 07:57:56.586  INFO c.r.a.c.AdminDataLoader                  : Admin user already exists.
-2026-03-12 07:58:17.696  INFO o.a.c.c.C.[.[.[/]                        : Initializing Spring DispatcherServlet 'dispatcherServlet'
-2026-03-12 07:58:22.430  WARN .m.m.a.ExceptionHandlerExceptionResolver : Resolved [org.springframework.web.servlet.resource.NoResourceFoundException: No static resource favicon.ico for request '/favicon.ico'.]
-2026-03-12 07:58:24.883  WARN .m.m.a.ExceptionHandlerExceptionResolver : Resolved [org.springframework.web.servlet.resource.NoResourceFoundException: No static resource favicon.ico for request '/favicon.ico'.]
-2026-03-12 07:58:38.200  INFO c.r.a.s.EmailServiceImpl                 : Sending OTP email to shivamintu964@gmail.com
-2026-03-12 07:58:45.145  INFO c.r.a.s.EmailServiceImpl                 : OTP email sent successfully to shivamintu964@gmail.com
-2026-03-12 07:59:08.659  WARN .m.m.a.ExceptionHandlerExceptionResolver : Resolved [org.springframework.web.servlet.resource.NoResourceFoundException: No static resource favicon.ico for request '/favicon.ico'.]
-2026-03-12 07:59:10.308  WARN .m.m.a.ExceptionHandlerExceptionResolver : Resolved [org.springframework.data.redis.RedisConnectionFailureException: Unable to connect to Redis]
-2026-03-12 07:59:10.820  WARN .m.m.a.ExceptionHandlerExceptionResolver : Resolved [org.springframework.data.redis.RedisConnectionFailureException: Unable to connect to Redis]
-2026-03-12 07:59:23.303  WARN .m.m.a.ExceptionHandlerExceptionResolver : Resolved [org.springframework.data.redis.RedisConnectionFailureException: Unable to connect to Redis]
-2026-03-12 07:59:23.378  WARN .m.m.a.ExceptionHandlerExceptionResolver : Resolved [org.springframework.web.servlet.resource.NoResourceFoundException: No static resource favicon.ico for request '/favicon.ico'.]
-2026-03-12 07:59:35.787  INFO c.r.a.r.RazorpayRestController           : Creating Razorpay order for amount: 100
-2026-03-12 07:59:36.424 ERROR c.r.a.s.RazorpayService                  : Error creating Razorpay order
-
-com.razorpay.RazorpayException: BAD_REQUEST_ERROR:Authentication failed
-	at com.razorpay.ApiClient.throwException(ApiClient.java:228) ~[razorpay-java-1.4.6.jar:?]
-	at com.razorpay.ApiClient.processResponse(ApiClient.java:180) ~[razorpay-java-1.4.6.jar:?]
-	at com.razorpay.ApiClient.post(ApiClient.java:55) ~[razorpay-java-1.4.6.jar:?]
-	at com.razorpay.OrderClient.post(OrderClient.java:7) ~[razorpay-java-1.4.6.jar:?]
-	at com.razorpay.ApiClient.post(ApiClient.java:50) ~[razorpay-java-1.4.6.jar:?]
-	at com.razorpay.OrderClient.post(OrderClient.java:7) ~[razorpay-java-1.4.6.jar:?]
-	at com.razorpay.OrderClient.create(OrderClient.java:14) ~[razorpay-java-1.4.6.jar:?]
-	at com.rev.app.service.RazorpayService.createOrder(RazorpayService.java:51) ~[classes/:?]
-	at com.rev.app.rest.RazorpayRestController.createOrder(RazorpayRestController.java:34) ~[classes/:?]
-	at java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:104) ~[?:?]
-	at java.base/java.lang.reflect.Method.invoke(Method.java:565) ~[?:?]
-	at org.springframework.web.method.support.InvocableHandlerMethod.doInvoke(InvocableHandlerMethod.java:252) ~[spring-web-7.0.5.jar:7.0.5]
-	at org.springframework.web.method.support.InvocableHandlerMethod.invokeForRequest(InvocableHandlerMethod.java:184) ~[spring-web-7.0.5.jar:7.0.5]
-	at org.springframework.web.servlet.mvc.method.annotation.ServletInvocableHandlerMethod.invokeAndHandle(ServletInvocableHandlerMethod.java:117) ~[spring-webmvc-7.0.5.jar:7.0.5]
-	at org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter.invokeHandlerMethod(RequestMappingHandlerAdapter.java:934) ~[spring-webmvc-7.0.5.jar:7.0.5]
-	at org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter.handleInternal(RequestMappingHandlerAdapter.java:853) ~[spring-webmvc-7.0.5.jar:7.0.5]
-	at org.springframework.web.servlet.mvc.method.AbstractHandlerMethodAdapter.handle(AbstractHandlerMethodAdapter.java:86) ~[spring-webmvc-7.0.5.jar:7.0.5]
-	at org.springframework.web.servlet.DispatcherServlet.doDispatch(DispatcherServlet.java:963) ~[spring-webmvc-7.0.5.jar:7.0.5]
-	at org.springframework.web.servlet.DispatcherServlet.doService(DispatcherServlet.java:866) ~[spring-webmvc-7.0.5.jar:7.0.5]
-	at org.springframework.web.servlet.FrameworkServlet.processRequest(FrameworkServlet.java:1000) ~[spring-webmvc-7.0.5.jar:7.0.5]
-	at org.springframework.web.servlet.FrameworkServlet.doPost(FrameworkServlet.java:903) ~[spring-webmvc-7.0.5.jar:7.0.5]
-	at jakarta.servlet.http.HttpServlet.service(HttpServlet.java:649) ~[tomcat-embed-core-11.0.18.jar:6.1]
-	at org.springframework.web.servlet.FrameworkServlet.service(FrameworkServlet.java:874) ~[spring-webmvc-7.0.5.jar:7.0.5]
-	at jakarta.servlet.http.HttpServlet.service(HttpServlet.java:710) ~[tomcat-embed-core-11.0.18.jar:6.1]
-	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:128) [tomcat-embed-core-11.0.18.jar:11.0.18]
-	at org.apache.tomcat.websocket.server.WsFilter.doFilter(WsFilter.java:53) ~[tomcat-embed-websocket-11.0.18.jar:11.0.18]
-	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:107) [tomcat-embed-core-11.0.18.jar:11.0.18]
-	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:110) [spring-web-7.0.5.jar:7.0.5]
-	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:107) [tomcat-embed-core-11.0.18.jar:11.0.18]
-	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:110) [spring-web-7.0.5.jar:7.0.5]
-	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:107) [tomcat-embed-core-11.0.18.jar:11.0.18]
-	at org.springframework.web.filter.CompositeFilter$VirtualFilterChain.doFilter(CompositeFilter.java:108) ~[spring-web-7.0.5.jar:7.0.5]
-	at org.springframework.security.web.FilterChainProxy.lambda$doFilterInternal$3(FilterChainProxy.java:235) ~[spring-security-web-7.0.3.jar:7.0.3]
-	at org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:371) ~[spring-security-web-7.0.3.jar:7.0.3]
-	at org.springframework.security.web.access.intercept.AuthorizationFilter.doFilter(AuthorizationFilter.java:101) ~[spring-security-web-7.0.3.jar:7.0.3]
-	at org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:380) ~[spring-security-web-7.0.3.jar:7.0.3]
-	at org.springframework.security.web.access.ExceptionTranslationFilter.doFilter(ExceptionTranslationFilter.java:126) ~[spring-security-web-7.0.3.jar:7.0.3]
-	at org.springframework.security.web.access.ExceptionTranslationFilter.doFilter(ExceptionTranslationFilter.java:120) ~[spring-security-web-7.0.3.jar:7.0.3]
-	at org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:380) ~[spring-security-web-7.0.3.jar:7.0.3]
-	at org.springframework.security.web.session.SessionManagementFilter.doFilter(SessionManagementFilter.java:132) ~[spring-security-web-7.0.3.jar:7.0.3]
-	at org.springframework.security.web.session.SessionManagementFilter.doFilter(SessionManagementFilter.java:86) ~[spring-security-web-7.0.3.jar:7.0.3]
-	at org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:380) ~[spring-security-web-7.0.3.jar:7.0.3]
-	at org.springframework.security.web.authentication.AnonymousAuthenticationFilter.doFilter(AnonymousAuthenticationFilter.java:100) ~[spring-security-web-7.0.3.jar:7.0.3]
-	at org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:380) ~[spring-security-web-7.0.3.jar:7.0.3]
-	at org.springframework.security.web.servletapi.SecurityContextHolderAwareRequestFilter.doFilter(SecurityContextHolderAwareRequestFilter.java:181) ~[spring-security-web-7.0.3.jar:7.0.3]
-	at org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:380) ~[spring-security-web-7.0.3.jar:7.0.3]
-	at org.springframework.security.web.savedrequest.RequestCacheAwareFilter.doFilter(RequestCacheAwareFilter.java:63) ~[spring-security-web-7.0.3.jar:7.0.3]
-	at org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:380) ~[spring-security-web-7.0.3.jar:7.0.3]
-	at com.rev.app.security.JwtAuthFilter.doFilterInternal(JwtAuthFilter.java:58) ~[classes/:?]
-	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116) [spring-web-7.0.5.jar:7.0.5]
-	at org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:380) ~[spring-security-web-7.0.3.jar:7.0.3]
-	at com.rev.app.security.RateLimitingFilter.doFilterInternal(RateLimitingFilter.java:47) ~[classes/:?]
-	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116) [spring-web-7.0.5.jar:7.0.5]
-	at org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:380) ~[spring-security-web-7.0.3.jar:7.0.3]
-	at org.springframework.security.web.authentication.logout.LogoutFilter.doFilter(LogoutFilter.java:110) ~[spring-security-web-7.0.3.jar:7.0.3]
-	at org.springframework.security.web.authentication.logout.LogoutFilter.doFilter(LogoutFilter.java:96) ~[spring-security-web-7.0.3.jar:7.0.3]
-	at org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:380) ~[spring-security-web-7.0.3.jar:7.0.3]
-	at org.springframework.security.web.header.HeaderWriterFilter.doHeadersAfter(HeaderWriterFilter.java:90) ~[spring-security-web-7.0.3.jar:7.0.3]
-	at org.springframework.security.web.header.HeaderWriterFilter.doFilterInternal(HeaderWriterFilter.java:75) ~[spring-security-web-7.0.3.jar:7.0.3]
-	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116) [spring-web-7.0.5.jar:7.0.5]
-	at org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:380) ~[spring-security-web-7.0.3.jar:7.0.3]
-	at org.springframework.security.web.context.SecurityContextHolderFilter.doFilter(SecurityContextHolderFilter.java:82) ~[spring-security-web-7.0.3.jar:7.0.3]
-	at org.springframework.security.web.context.SecurityContextHolderFilter.doFilter(SecurityContextHolderFilter.java:69) ~[spring-security-web-7.0.3.jar:7.0.3]
-	at org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:380) ~[spring-security-web-7.0.3.jar:7.0.3]
-	at org.springframework.security.web.context.request.async.WebAsyncManagerIntegrationFilter.doFilterInternal(WebAsyncManagerIntegrationFilter.java:62) ~[spring-security-web-7.0.3.jar:7.0.3]
-	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116) [spring-web-7.0.5.jar:7.0.5]
-	at org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:380) ~[spring-security-web-7.0.3.jar:7.0.3]
-	at org.springframework.security.web.session.DisableEncodeUrlFilter.doFilterInternal(DisableEncodeUrlFilter.java:42) ~[spring-security-web-7.0.3.jar:7.0.3]
-	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116) [spring-web-7.0.5.jar:7.0.5]
-	at org.springframework.security.web.FilterChainProxy$VirtualFilterChain.doFilter(FilterChainProxy.java:380) ~[spring-security-web-7.0.3.jar:7.0.3]
-	at org.springframework.security.web.FilterChainProxy.doFilterInternal(FilterChainProxy.java:237) ~[spring-security-web-7.0.3.jar:7.0.3]
-	at org.springframework.security.web.FilterChainProxy.doFilter(FilterChainProxy.java:195) ~[spring-security-web-7.0.3.jar:7.0.3]
-	at org.springframework.web.filter.CompositeFilter$VirtualFilterChain.doFilter(CompositeFilter.java:113) ~[spring-web-7.0.5.jar:7.0.5]
-	at org.springframework.web.filter.ServletRequestPathFilter.doFilter(ServletRequestPathFilter.java:52) ~[spring-web-7.0.5.jar:7.0.5]
-	at org.springframework.web.filter.CompositeFilter$VirtualFilterChain.doFilter(CompositeFilter.java:113) ~[spring-web-7.0.5.jar:7.0.5]
-	at org.springframework.web.filter.CompositeFilter.doFilter(CompositeFilter.java:74) ~[spring-web-7.0.5.jar:7.0.5]
-	at org.springframework.security.config.annotation.web.configuration.WebSecurityConfiguration$CompositeFilterChainProxy.doFilter(WebSecurityConfiguration.java:317) ~[spring-security-config-7.0.3.jar:7.0.3]
-	at org.springframework.web.filter.DelegatingFilterProxy.invokeDelegate(DelegatingFilterProxy.java:355) ~[spring-web-7.0.5.jar:7.0.5]
-	at org.springframework.web.filter.DelegatingFilterProxy.doFilter(DelegatingFilterProxy.java:272) ~[spring-web-7.0.5.jar:7.0.5]
-	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:107) [tomcat-embed-core-11.0.18.jar:11.0.18]
-	at org.springframework.web.filter.RequestContextFilter.doFilterInternal(RequestContextFilter.java:100) ~[spring-web-7.0.5.jar:7.0.5]
-	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116) [spring-web-7.0.5.jar:7.0.5]
-	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:107) [tomcat-embed-core-11.0.18.jar:11.0.18]
-	at org.springframework.web.filter.FormContentFilter.doFilterInternal(FormContentFilter.java:93) ~[spring-web-7.0.5.jar:7.0.5]
-	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116) [spring-web-7.0.5.jar:7.0.5]
-	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:107) [tomcat-embed-core-11.0.18.jar:11.0.18]
-	at org.springframework.web.filter.CharacterEncodingFilter.doFilterInternal(CharacterEncodingFilter.java:199) [spring-web-7.0.5.jar:7.0.5]
-	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:116) [spring-web-7.0.5.jar:7.0.5]
-	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:107) [tomcat-embed-core-11.0.18.jar:11.0.18]
-	at org.apache.catalina.core.StandardWrapperValve.invoke(StandardWrapperValve.java:165) [tomcat-embed-core-11.0.18.jar:11.0.18]
-	at org.apache.catalina.core.StandardContextValve.invoke(StandardContextValve.java:77) [tomcat-embed-core-11.0.18.jar:11.0.18]
-	at org.apache.catalina.authenticator.AuthenticatorBase.invoke(AuthenticatorBase.java:492) [tomcat-embed-core-11.0.18.jar:11.0.18]
-	at org.apache.catalina.core.StandardHostValve.invoke(StandardHostValve.java:113) [tomcat-embed-core-11.0.18.jar:11.0.18]
-	at org.apache.catalina.valves.ErrorReportValve.invoke(ErrorReportValve.java:83) [tomcat-embed-core-11.0.18.jar:11.0.18]
-	at org.apache.catalina.core.StandardEngineValve.invoke(StandardEngineValve.java:72) [tomcat-embed-core-11.0.18.jar:11.0.18]
-	at org.apache.catalina.connector.CoyoteAdapter.service(CoyoteAdapter.java:341) [tomcat-embed-core-11.0.18.jar:11.0.18]
-	at org.apache.coyote.http11.Http11Processor.service(Http11Processor.java:397) [tomcat-embed-core-11.0.18.jar:11.0.18]
-	at org.apache.coyote.AbstractProcessorLight.process(AbstractProcessorLight.java:63) [tomcat-embed-core-11.0.18.jar:11.0.18]
-	at org.apache.coyote.AbstractProtocol$ConnectionHandler.process(AbstractProtocol.java:903) [tomcat-embed-core-11.0.18.jar:11.0.18]
-	at org.apache.tomcat.util.net.NioEndpoint$SocketProcessor.doRun(NioEndpoint.java:1779) [tomcat-embed-core-11.0.18.jar:11.0.18]
-	at org.apache.tomcat.util.net.SocketProcessorBase.run(SocketProcessorBase.java:52) [tomcat-embed-core-11.0.18.jar:11.0.18]
-	at org.apache.tomcat.util.threads.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:946) [tomcat-embed-core-11.0.18.jar:11.0.18]
-	at org.apache.tomcat.util.threads.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:480) [tomcat-embed-core-11.0.18.jar:11.0.18]
-	at org.apache.tomcat.util.threads.TaskThread$WrappingRunnable.run(TaskThread.java:57) [tomcat-embed-core-11.0.18.jar:11.0.18]
-	at java.base/java.lang.Thread.run(Thread.java:1474) [?:?]
-
-2026-03-12 07:59:36.508  WARN .m.m.a.ExceptionHandlerExceptionResolver : Resolved [java.lang.RuntimeException: Failed to create Razorpay order: BAD_REQUEST_ERROR:Authentication failed]
-2026-03-12 08:05:55.439  INFO o.s.b.t.GracefulShutdown                 : Commencing graceful shutdown. Waiting for active requests to complete
-2026-03-12 08:05:55.479  INFO o.s.b.t.GracefulShutdown                 : Graceful shutdown complete
-2026-03-12 08:05:55.597  INFO j.LocalContainerEntityManagerFactoryBean : Closing JPA EntityManagerFactory for persistence unit 'default'
-2026-03-12 08:05:55.668  INFO c.z.h.HikariDataSource                   : HikariPool-1 - Shutdown initiated...
-2026-03-12 08:05:59.771  INFO c.z.h.HikariDataSource                   : HikariPool-1 - Shutdown completed.
+2026-03-20 10:18:40.600  INFO o.h.o.core                               : HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2026-03-20 10:18:48.356  INFO j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
+2026-03-20 10:18:50.448  INFO o.s.d.j.r.q.QueryEnhancerFactories       : Hibernate is in classpath; If applicable, HQL parser will be used.
+2026-03-20 10:19:03.470 DEBUG c.r.a.s.RateLimitingFilter               : Filter 'rateLimitingFilter' configured for use
+2026-03-20 10:19:03.473 DEBUG c.r.a.s.JwtAuthFilter                    : Filter 'jwtAuthFilter' configured for use
+2026-03-20 10:19:10.264  INFO c.r.a.s.RazorpayService                  : Razorpay Client initialized successfully
+2026-03-20 10:19:10.728  WARN JpaBaseConfiguration$JpaWebConfiguration : spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
+2026-03-20 10:19:11.912  INFO o.s.b.w.a.WelcomePageHandlerMapping      : Adding welcome page template: index
+2026-03-20 10:19:15.615  INFO o.s.b.d.a.OptionalLiveReloadServer       : LiveReload server is running on port 35729
+2026-03-20 10:19:15.820  INFO o.a.c.h.Http11NioProtocol                : Starting ProtocolHandler ["http-nio-8099"]
+2026-03-20 10:19:15.879  INFO o.s.b.t.TomcatWebServer                  : Tomcat started on port 8099 (http) with context path '/'
+2026-03-20 10:19:15.904  INFO c.r.a.Revpay1Application                 : Started Revpay1Application in 70.73 seconds (process running for 75.25)
+2026-03-20 10:19:16.365  INFO c.r.a.c.AdminDataLoader                  : Admin user already exists.
+2026-03-20 10:19:25.126  INFO o.a.c.c.C.[.[.[/]                        : Initializing Spring DispatcherServlet 'dispatcherServlet'
+2026-03-20 10:19:28.026  WARN .m.m.a.ExceptionHandlerExceptionResolver : Resolved [org.springframework.web.servlet.resource.NoResourceFoundException: No static resource favicon.ico for request '/favicon.ico'.]
+2026-03-20 10:19:40.939  WARN .m.m.a.ExceptionHandlerExceptionResolver : Resolved [org.springframework.web.servlet.resource.NoResourceFoundException: No static resource favicon.ico for request '/favicon.ico'.]
+2026-03-20 10:19:52.387  INFO c.r.a.s.EmailServiceImpl                 : Sending OTP email to shivamintu964@gmail.com
+2026-03-20 10:19:58.026  INFO c.r.a.s.EmailServiceImpl                 : OTP email sent successfully to shivamintu964@gmail.com
+2026-03-20 10:20:13.882  INFO c.r.a.s.IWalletServiceImpl               : Fetching wallet balance from DB for user ID: 2
+2026-03-20 10:20:14.725  WARN .m.m.a.ExceptionHandlerExceptionResolver : Resolved [org.springframework.web.servlet.resource.NoResourceFoundException: No static resource favicon.ico for request '/favicon.ico'.]
+2026-03-20 10:20:20.293  WARN .m.m.a.ExceptionHandlerExceptionResolver : Resolved [org.springframework.web.servlet.resource.NoResourceFoundException: No static resource favicon.ico for request '/favicon.ico'.]
+2026-03-20 10:20:22.023  WARN .m.m.a.ExceptionHandlerExceptionResolver : Resolved [org.springframework.web.servlet.resource.NoResourceFoundException: No static resource favicon.ico for request '/favicon.ico'.]
+2026-03-20 10:20:25.366  WARN .m.m.a.ExceptionHandlerExceptionResolver : Resolved [org.springframework.web.servlet.resource.NoResourceFoundException: No static resource favicon.ico for request '/favicon.ico'.]
+2026-03-20 10:20:27.858  WARN .m.m.a.ExceptionHandlerExceptionResolver : Resolved [org.springframework.web.servlet.resource.NoResourceFoundException: No static resource favicon.ico for request '/favicon.ico'.]
+2026-03-20 10:20:30.507  WARN .m.m.a.ExceptionHandlerExceptionResolver : Resolved [org.springframework.web.servlet.resource.NoResourceFoundException: No static resource favicon.ico for request '/favicon.ico'.]
+2026-03-20 10:20:44.333  WARN .m.m.a.ExceptionHandlerExceptionResolver : Resolved [org.springframework.web.servlet.resource.NoResourceFoundException: No static resource favicon.ico for request '/favicon.ico'.]
+2026-03-20 10:20:45.412  WARN .m.m.a.ExceptionHandlerExceptionResolver : Resolved [org.springframework.web.servlet.resource.NoResourceFoundException: No static resource favicon.ico for request '/favicon.ico'.]
+2026-03-20 10:20:46.968  WARN .m.m.a.ExceptionHandlerExceptionResolver : Resolved [org.springframework.web.servlet.resource.NoResourceFoundException: No static resource favicon.ico for request '/favicon.ico'.]
+2026-03-20 10:20:50.690  WARN .m.m.a.ExceptionHandlerExceptionResolver : Resolved [org.springframework.web.servlet.resource.NoResourceFoundException: No static resource favicon.ico for request '/favicon.ico'.]
+2026-03-20 10:20:52.979  WARN .m.m.a.ExceptionHandlerExceptionResolver : Resolved [org.springframework.web.servlet.resource.NoResourceFoundException: No static resource favicon.ico for request '/favicon.ico'.]
+2026-03-20 10:20:59.695  INFO o.s.b.t.GracefulShutdown                 : Commencing graceful shutdown. Waiting for active requests to complete
+2026-03-20 10:20:59.708  INFO o.s.b.t.GracefulShutdown                 : Graceful shutdown complete
+2026-03-20 10:20:59.763  INFO j.LocalContainerEntityManagerFactoryBean : Closing JPA EntityManagerFactory for persistence unit 'default'
+2026-03-20 10:20:59.776  INFO c.z.h.HikariDataSource                   : HikariPool-1 - Shutdown initiated...
+2026-03-20 10:20:59.794  INFO c.z.h.HikariDataSource                   : HikariPool-1 - Shutdown completed.

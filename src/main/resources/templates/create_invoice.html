@@ -135,17 +135,15 @@
 
     <div th:replace="~{fragments/layout :: footerFragment}"></div>
 
-    <script>
+    <script th:inline="javascript">
         let itemCount = 0;
 
         document.addEventListener('DOMContentLoaded', () => {
-            const userStr = sessionStorage.getItem('user');
-            if (!userStr || JSON.parse(userStr).role !== 'BUSINESS') {
-                window.location.href = '/dashboard';
-                return;
-            }
+             // Role check handled by controller
             addLineItem(); // Start with one row
         });
+
+        const currentUserId = /*[[${session.user.id}]]*/ null;
 
         function addLineItem() {
             itemCount++;
@@ -210,8 +208,6 @@
                 });
             });
 
-            const user = JSON.parse(sessionStorage.getItem('user'));
-
             const payload = {
                 customerName: document.getElementById('custName').value,
                 customerEmail: document.getElementById('custEmail').value,
@@ -223,7 +219,7 @@
 
             setButtonLoading(btn, true, 'Generating Invoice...');
             try {
-                const res = await fetchWithAuth(`/api/invoices/business/${user.id}`, {
+                const res = await fetchWithAuth(`/api/invoices/business/${currentUserId}`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(payload)

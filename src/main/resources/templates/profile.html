@@ -9,72 +9,58 @@
     <div th:replace="~{fragments/layout :: headerFragment}"></div>
 
     <div class="main-content">
-        <h2>User Profile</h2>
-        <div class="card" id="profileCard">
-            <div id="loader">Loading user details...</div>
-            <div id="profileDetails" style="display:none;">
-                <p><strong>Full Name:</strong> <span id="profName"></span></p>
-                <p><strong>Email:</strong> <span id="profEmail"></span></p>
-                <p><strong>Phone Number:</strong> <span id="profPhone"></span></p>
-                <p><strong>Account Type:</strong> <span id="profRole"></span></p>
-                <p><strong>Security Question:</strong> <span id="profQuestion"></span></p>
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1 style="font-size: 2rem; font-weight: 800; letter-spacing: -0.5px; margin: 0;">User Profile</h1>
+        </div>
 
-                <div id="businessInfo"
-                    style="display:none; margin-top: 20px; border-top: 1px solid #ddd; padding-top: 10px;">
-                    <h3>Business Information</h3>
-                    <p><strong>Business Name:</strong> <span id="profBusName"></span></p>
-                    <p><strong>Business Type:</strong> <span id="profBusType"></span></p>
+        <div class="card" id="profileCard" style="max-width: 600px; padding: 2rem;">
+            <div id="profileDetails">
+                <div style="display: grid; gap: 1rem;">
+                    <div><strong class="text-secondary" style="font-size: 0.85rem; text-transform: uppercase;">Full
+                            Name</strong>
+                        <div id="profName" style="font-size: 1.1rem; font-weight: 600; color: var(--text-main);" th:text="${session.user.fullName}"></div>
+                    </div>
+                    <div><strong class="text-secondary"
+                            style="font-size: 0.85rem; text-transform: uppercase;">Email</strong>
+                        <div id="profEmail" style="color: var(--text-main);" th:text="${session.user.email}"></div>
+                    </div>
+                    <div><strong class="text-secondary" style="font-size: 0.85rem; text-transform: uppercase;">Phone
+                            Number</strong>
+                        <div id="profPhone" style="color: var(--text-main);" th:text="${session.user.phoneNumber ?: 'N/A'}"></div>
+                    </div>
+                    <div><strong class="text-secondary" style="font-size: 0.85rem; text-transform: uppercase;">Account
+                            Type</strong>
+                        <div id="profRole" style="color: var(--text-main);" th:text="${session.user.role}"></div>
+                    </div>
                 </div>
 
-                <div style="margin-top: 20px;">
-                    <a th:href="@{/user/settings}" class="btn">Account Settings</a>
+                <div th:if="${session.user.role.name() == 'BUSINESS'}" id="businessInfo"
+                    style="margin-top: 2rem; border-top: 1px solid var(--border); padding-top: 1.5rem;">
+                    <h3 style="font-size: 1.1rem; font-weight: 700; margin-bottom: 1rem; color: var(--text-main);">
+                        Business Information</h3>
+                    <div style="display: grid; gap: 1rem;">
+                        <div><strong class="text-secondary"
+                                style="font-size: 0.85rem; text-transform: uppercase;">Business Name</strong>
+                            <div id="profBusName" style="font-size: 1.1rem; font-weight: 600; color: var(--text-main);" th:text="${session.user.businessName ?: 'N/A'}">
+                            </div>
+                        </div>
+                        <div><strong class="text-secondary"
+                                style="font-size: 0.85rem; text-transform: uppercase;">Business Type</strong>
+                            <div id="profBusType" style="color: var(--text-main);" th:text="${session.user.businessType ?: 'N/A'}"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div style="margin-top: 2rem;">
+                    <a th:href="@{/user/settings}" class="btn btn-primary w-100"
+                        style="text-align: center; text-decoration: none;">Account Settings</a>
                 </div>
             </div>
-            <div id="profError" class="error" style="display:none;"></div>
         </div>
     </div>
 
-    <div th:replace="~{fragments/layout :: footerFragment}"></div>
-
     <script>
-        document.addEventListener('DOMContentLoaded', async () => {
-            const token = sessionStorage.getItem('token') || sessionStorage.getItem('jwtToken');
-            const userId = sessionStorage.getItem('userId') || (sessionStorage.getItem('user') ? JSON.parse(sessionStorage.getItem('user')).id : null);
-
-            if (!userId || !token) {
-                window.location.href = '/login';
-                return;
-            }
-
-            try {
-                // Fetch fresh from API using global helper
-                const response = await fetchWithAuth(`/api/users/${userId}`);
-
-                if (response.ok) {
-                    const data = await response.json();
-                    document.getElementById('profName').innerText = data.fullName;
-                    document.getElementById('profEmail').innerText = data.email;
-                    document.getElementById('profPhone').innerText = data.phoneNumber || 'N/A';
-                    document.getElementById('profRole').innerText = data.role;
-                    document.getElementById('profQuestion').innerText = data.securityQuestion;
-
-                    if (data.role === 'BUSINESS') {
-                        document.getElementById('businessInfo').style.display = 'block';
-                        document.getElementById('profBusName').innerText = data.businessName || 'N/A';
-                        document.getElementById('profBusType').innerText = data.businessType || 'N/A';
-                    }
-
-                    document.getElementById('loader').style.display = 'none';
-                    document.getElementById('profileDetails').style.display = 'block';
-                } else {
-                    throw new Error("Failed to load profile");
-                }
-            } catch (err) {
-                document.getElementById('loader').style.display = 'none';
-                document.getElementById('profError').innerText = err.message;
-                document.getElementById('profError').style.display = 'block';
-            }
-        });
+        // Profile is now server-rendered. No initial fetch needed.
     </script>
 </body>
 

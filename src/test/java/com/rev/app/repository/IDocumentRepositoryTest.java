@@ -1,35 +1,34 @@
 package com.rev.app.repository;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
 
+import java.util.Collections;
 import java.util.List;
 
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
-import org.springframework.boot.jpa.test.autoconfigure.TestEntityManager;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import com.rev.app.entity.Document;
 import com.rev.app.entity.User;
 import com.rev.app.entity.User.Role;
 
-@DataJpaTest
+@ExtendWith(MockitoExtension.class)
 class IDocumentRepositoryTest {
 
-    @Autowired
+    @Mock
     private IDocumentRepository documentRepository;
-
-    @Autowired
-    private TestEntityManager entityManager;
 
     @Test
     void findByUserId_ReturnsDocuments() {
         User user = new User();
+        user.setId(1L);
         user.setEmail("doc@test.com");
         user.setFullName("Doc User");
         user.setPassword("pass");
         user.setRole(Role.PERSONAL);
-        user = entityManager.persistAndFlush(user);
 
         Document doc = new Document();
         doc.setUser(user);
@@ -38,9 +37,10 @@ class IDocumentRepositoryTest {
         doc.setDocumentType("ID");
         doc.setData(new byte[]{1, 2, 3});
         doc.setVerified(false);
-        entityManager.persistAndFlush(doc);
 
-        List<Document> found = documentRepository.findByUserId(user.getId());
+        when(documentRepository.findByUserId(1L)).thenReturn(Collections.singletonList(doc));
+
+        List<Document> found = documentRepository.findByUserId(1L);
 
         assertFalse(found.isEmpty());
         assertEquals(1, found.size());

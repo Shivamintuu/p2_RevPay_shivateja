@@ -8,85 +8,115 @@
 <body>
     <div th:replace="~{fragments/layout :: headerFragment}"></div>
 
-    <div class="container" style="max-width: 400px; margin: 50px auto;">
-        <h2>Login to your account</h2>
-
-        <!-- UI form that JS will intercept -->
-        <form id="loginForm" onsubmit="event.preventDefault(); submitLogin();">
-            <div class="form-group">
-                <label for="email">Email</label>
-                <input type="email" id="email" name="email" required>
+    <div style="min-height: calc(100vh - 80px); display: flex; align-items: center; justify-content: center; padding: 2rem;">
+        <div class="card" style="width: 100%; max-width: 440px; padding: 2.5rem 2rem;">
+            <div class="text-center mb-4">
+                <h2 style="font-weight: 800; color: var(--text-main); margin-bottom: 0.5rem; font-size: 1.75rem;">Welcome Back</h2>
+                <p class="text-secondary" style="font-size: 0.95rem;">Please enter your details to sign in.</p>
             </div>
 
-            <div class="form-group">
-                <label for="password">Password</label>
-                <input type="password" id="password" name="password" required>
-            </div>
+            <!-- UI form that JS will intercept -->
+            <form id="loginForm" onsubmit="event.preventDefault(); submitLogin();">
+                <div class="form-group">
+                    <label for="email">Email</label>
+                    <input type="email" id="email" name="email" required placeholder="Enter your email">
+                </div>
 
-            <div id="errorMessage" class="error" style="display:none; margin-bottom: 10px;"></div>
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <input type="password" id="password" name="password" required placeholder="••••••••">
+                </div>
 
-            <button type="submit" class="btn" style="width: 100%; margin-bottom: 15px;">Login</button>
+                <div id="errorMessage" class="alert alert-error" style="display:none; margin-bottom: 1.25rem;"></div>
 
-            <div style="text-align: right;">
-                <a href="#" onclick="showForgotPasswordForm()"
-                    style="font-size: 0.85rem; color: var(--primary-color);">Forgot Password?</a>
-            </div>
-        </form>
+                <button type="submit" class="btn btn-primary" style="width: 100%; margin-bottom: 1.25rem; padding: 0.8rem;">
+                    Sign In
+                </button>
 
-        <form id="otpForm" onsubmit="event.preventDefault(); submitOtp();" style="display:none;">
-            <div class="form-group">
-                <label for="otp">Enter OTP</label>
-                <input type="text" id="otp" name="otp" required>
-            </div>
+                <div class="text-center" style="margin-bottom: 1.5rem;">
+                    <a href="#" onclick="showForgotPasswordForm()" style="font-size: 0.9rem; font-weight: 500;">Forgot Password?</a>
+                </div>
+            </form>
 
-            <div id="otpErrorMessage" class="error" style="display:none; margin-bottom: 10px;"></div>
+            <form id="otpForm" onsubmit="event.preventDefault(); submitOtp();" style="display:none;">
+                <div class="form-group">
+                    <label for="otp">Enter 6-digit OTP</label>
+                    <input type="text" id="otp" name="otp" required placeholder="123456" style="text-align: center; font-size: 1.5rem; letter-spacing: 0.2em;">
+                </div>
 
-            <button type="submit" class="btn" style="width: 100%; margin-bottom: 15px;">Verify OTP</button>
+                <div id="otpErrorMessage" class="alert alert-error" style="display:none; margin-bottom: 1.25rem;"></div>
 
-            <div style="text-align: center;">
-                <a href="#" onclick="resendOtp()" style="font-size: 0.85rem; color: var(--primary-color);">Didn't
-                    receive it? Resend OTP</a>
-            </div>
-        </form>
+                <button type="submit" class="btn btn-primary" style="width: 100%; margin-bottom: 1.25rem; padding: 0.8rem;">
+                    Verify OTP
+                </button>
 
-        <form id="forgotPasswordForm" onsubmit="event.preventDefault(); submitForgotPassword();" style="display:none;">
-            <p style="font-size: 0.9rem; color: var(--text-secondary); margin-bottom: 15px;">Enter your email to receive
-                a password reset OTP.</p>
-            <div class="form-group">
-                <label for="resetEmail">Email</label>
-                <input type="email" id="resetEmail" name="resetEmail" required>
-            </div>
-            <div id="forgotErrorMessage" class="error" style="display:none; margin-bottom: 10px;"></div>
-            <button type="submit" class="btn btn-warning" style="width: 100%; margin-bottom: 15px;">Send Reset
-                OTP</button>
-            <div style="text-align: center;">
-                <a href="#" onclick="showLoginForm()" style="font-size: 0.85rem; color: var(--text-secondary);">Back to
-                    Login</a>
-            </div>
-        </form>
+                <div class="text-center">
+                    <a href="#" onclick="resendOtp()" style="font-size: 0.9rem; color: var(--text-secondary); font-weight: 500;">
+                        Didn't receive it? <span style="color: var(--primary);">Resend OTP</span>
+                    </a>
+                </div>
+            </form>
 
-        <form id="resetPasswordForm" onsubmit="event.preventDefault(); submitResetPassword();" style="display:none;">
-            <div class="form-group">
-                <label for="resetOtp">Enter Reset OTP</label>
-                <input type="text" id="resetOtp" name="resetOtp" required>
-            </div>
-            <div class="form-group">
-                <label for="newPassword">New Password</label>
-                <input type="password" id="newPassword" name="newPassword" required>
-            </div>
-            <div id="resetErrorMessage" class="error" style="display:none; margin-bottom: 10px;"></div>
-            <button type="submit" class="btn btn-success" style="width: 100%; margin-bottom: 15px;">Confirm New
-                Password</button>
-        </form>
+            <form id="forgotPasswordForm" onsubmit="event.preventDefault(); submitForgotPassword();" style="display:none;">
+                <p class="text-center text-secondary mb-3" style="font-size: 0.9rem;">
+                    Enter your email to receive a password reset OTP.
+                </p>
+                <div class="form-group">
+                    <label for="resetEmail">Email</label>
+                    <input type="email" id="resetEmail" name="resetEmail" required placeholder="name@example.com">
+                </div>
+                <div id="forgotErrorMessage" class="alert alert-error" style="display:none; margin-bottom: 1.25rem;"></div>
+                
+                <button type="submit" class="btn btn-primary" style="width: 100%; margin-bottom: 1.25rem; padding: 0.8rem;">
+                    Send Reset OTP
+                </button>
+                
+                <div class="text-center">
+                    <a href="#" onclick="showLoginForm()" style="font-size: 0.9rem; color: var(--text-secondary); font-weight: 500;">
+                        ← Back to Login
+                    </a>
+                </div>
+            </form>
 
-        <p id="registerText" style="text-align: center; margin-top: 15px;">
-            Don't have an account? <a th:href="@{/register}">Register here</a>.
-        </p>
+            <form id="resetPasswordForm" onsubmit="event.preventDefault(); submitResetPassword();" style="display:none;">
+                <div class="form-group">
+                    <label for="resetOtp">Enter Reset OTP</label>
+                    <input type="text" id="resetOtp" name="resetOtp" required style="text-align: center; font-size: 1.5rem; letter-spacing: 0.2em;">
+                </div>
+                <div class="form-group">
+                    <label for="newPassword">New Password</label>
+                    <input type="password" id="newPassword" name="newPassword" required placeholder="••••••••">
+                </div>
+                
+                <div id="resetErrorMessage" class="alert alert-error" style="display:none; margin-bottom: 1.25rem;"></div>
+                
+                <button type="submit" class="btn" style="background-color: var(--success); color: white; width: 100%; margin-bottom: 1.25rem; padding: 0.8rem;">
+                    Confirm New Password
+                </button>
+            </form>
+
+            <p id="registerText" class="text-center border-t mt-4 pt-4" style="font-size: 0.95rem; color: var(--text-secondary); border-top: 1px solid var(--border); padding-top: 1.25rem;">
+                Don't have an account? <a th:href="@{/register}" style="font-weight: 600;">Register here</a>
+            </p>
+        </div>
     </div>
 
     <div th:replace="~{fragments/layout :: footerFragment}"></div>
 
     <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const autoLoginEmail = sessionStorage.getItem('autoLoginEmail');
+            const autoLoginPassword = sessionStorage.getItem('autoLoginPassword');
+            
+            if (autoLoginEmail && autoLoginPassword) {
+                document.getElementById("email").value = autoLoginEmail;
+                document.getElementById("password").value = autoLoginPassword;
+                sessionStorage.removeItem('autoLoginEmail');
+                sessionStorage.removeItem('autoLoginPassword');
+                submitLogin();
+            }
+        });
+
         async function submitLogin() {
             const email = document.getElementById("email").value;
             const password = document.getElementById("password").value;

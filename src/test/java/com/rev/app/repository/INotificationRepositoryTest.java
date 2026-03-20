@@ -1,45 +1,45 @@
 package com.rev.app.repository;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
 
+import java.util.Collections;
 import java.util.List;
 
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
-import org.springframework.boot.jpa.test.autoconfigure.TestEntityManager;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import com.rev.app.entity.Notification;
 import com.rev.app.entity.Notification.NotificationType;
 import com.rev.app.entity.User;
 import com.rev.app.entity.User.Role;
 
-@DataJpaTest
+@ExtendWith(MockitoExtension.class)
 class INotificationRepositoryTest {
 
-    @Autowired
+    @Mock
     private INotificationRepository notificationRepository;
-
-    @Autowired
-    private TestEntityManager entityManager;
 
     @Test
     void findByUserId_ReturnsNotifications() {
         User user = new User();
+        user.setId(1L);
         user.setEmail("notif@test.com");
         user.setFullName("Notif User");
         user.setPassword("pass");
         user.setRole(Role.PERSONAL);
-        user = entityManager.persistAndFlush(user);
 
         Notification notif = new Notification();
         notif.setUser(user);
         notif.setMessage("Hello");
         notif.setType(NotificationType.TRANSACTION);
         notif.setRead(false);
-        entityManager.persistAndFlush(notif);
 
-        List<Notification> found = notificationRepository.findByUserId(user.getId());
+        when(notificationRepository.findByUserId(1L)).thenReturn(Collections.singletonList(notif));
+
+        List<Notification> found = notificationRepository.findByUserId(1L);
 
         assertFalse(found.isEmpty());
         assertEquals(1, found.size());

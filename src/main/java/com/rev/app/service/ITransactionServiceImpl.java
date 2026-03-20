@@ -189,4 +189,14 @@ public class ITransactionServiceImpl implements ITransactionService {
         }
         return sb.toString().getBytes();
     }
+
+    @Override
+    public List<Transaction> getTransactionHistory(Long userId) {
+        return transactionRepository.findBySenderIdOrRecipientId(userId, userId);
+    }
+
+    @Override
+    public List<Transaction> getAllTransactions() {
+        return transactionRepository.findAll();
+    }
 }

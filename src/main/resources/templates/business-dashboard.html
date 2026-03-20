@@ -60,19 +60,19 @@
         <div class="dashboard-grid">
             <div class="stat-card">
                 <h3>Total Revenue Received</h3>
-                <div class="value" id="valTotalReceived">$0.00</div>
+                <div class="value" id="valTotalReceived" th:text="${'$' + #numbers.formatDecimal(totalReceived, 1, 2)}">$0.00</div>
             </div>
             <div class="stat-card" style="border-top-color: #dc3545;">
                 <h3>Total Funds Sent</h3>
-                <div class="value" id="valTotalSent">$0.00</div>
+                <div class="value" id="valTotalSent" th:text="${'$' + #numbers.formatDecimal(totalSent, 1, 2)}">$0.00</div>
             </div>
             <div class="stat-card" style="border-top-color: #ffc107;">
                 <h3>Pending Invoices (#)</h3>
-                <div class="value" id="valPendingCount">0</div>
+                <div class="value" id="valPendingCount" th:text="${pendingInvoicesCount}">0</div>
             </div>
             <div class="stat-card" style="border-top-color: #17a2b8;">
                 <h3>Outstanding Amount</h3>
-                <div class="value" id="valOutstanding">$0.00</div>
+                <div class="value" id="valOutstanding" th:text="${'$' + #numbers.formatDecimal(outstandingInvoiceAmount, 1, 2)}">$0.00</div>
             </div>
         </div>
 
@@ -88,43 +88,25 @@
             </div>
         </div>
 
-        <div class="chart-container quick-actions" style="background: rgba(255, 255, 255, 0.9); padding: 20px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05); margin-bottom: 30px;">
+        <div class="chart-container quick-actions"
+            style="background: rgba(255, 255, 255, 0.9); padding: 20px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05); margin-bottom: 30px;">
             <h3>Business Tools</h3>
-            <a href="/invoices/create" class="btn">Create Invoice</a>
-            <a href="/loans/apply" class="btn">Apply for Loan</a>
-            <a href="/documents/upload" class="btn">Upload Verification Docs</a>
+            <a href="/invoice/create" class="btn">Create Invoice</a>
+            <a href="/loan/apply" class="btn">Apply for Loan</a>
+            <a href="/user/profile" class="btn">Manage Profile</a>
         </div>
     </div>
 
     <!-- Scripts -->
-    <script>
+    <script th:inline="javascript">
         document.addEventListener("DOMContentLoaded", function () {
-            const token = sessionStorage.getItem('token') || sessionStorage.getItem('jwtToken');
-            const userId = sessionStorage.getItem('userId');
-            const userStr = sessionStorage.getItem('user');
-            const user = userStr ? JSON.parse(userStr) : null;
-            const role = user ? user.role : null;
+            const data = {
+                totalReceived: /*[[${totalReceived}]]*/ 0,
+                totalSent: /*[[${totalSent}]]*/ 0,
+                outstandingInvoiceAmount: /*[[${outstandingInvoiceAmount}]]*/ 0
+            };
 
-            if (!token || role !== 'BUSINESS') {
-                alert("Unauthorized Access. Business account required.");
-                window.location.href = "/dashboard"; // Fallback to personal
-                return;
-            }
-
-            // Fetch Analytics Data
-            fetch(`/api/analytics/business/${userId}/summary`, {
-                headers: { 'Authorization': 'Bearer ' + token }
-            })
-                .then(res => res.json())
-                .then(data => {
-                    document.getElementById('valTotalReceived').innerText = '$' + (data.totalReceived || 0).toFixed(2);
-                    document.getElementById('valTotalSent').innerText = '$' + (data.totalSent || 0).toFixed(2);
-                    document.getElementById('valPendingCount').innerText = data.pendingInvoicesCount || 0;
-                    document.getElementById('valOutstanding').innerText = '$' + (data.outstandingInvoiceAmount || 0).toFixed(2);
-
-                    initCharts(data);
-                })
-                .catch(err => console.error("Error fetching business telemetry: ", err));
+            initCharts(data);
 
             function initCharts(data) {
                 // Cash Flow Bar Chart

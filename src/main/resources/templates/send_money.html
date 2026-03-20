@@ -9,24 +9,32 @@
     <div th:replace="~{fragments/layout :: headerFragment}"></div>
 
     <div class="main-content">
-        <h2 style="margin-bottom: 25px; font-weight: 700; color: #1e1b4b;">Send Money</h2>
-        <div class="card" style="max-width: 540px;">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1 style="font-size: 2rem; font-weight: 800; letter-spacing: -0.5px; margin: 0;">Send Money</h1>
+        </div>
+
+        <div class="card" style="max-width: 540px; padding: 2rem;">
 
             <!-- Payment Method Selector -->
-            <div class="form-group" id="paymentMethodGroup">
+            <div class="form-group mb-4" id="paymentMethodGroup">
                 <label for="paymentMethodSelect" style="font-weight: 600;">Pay With</label>
-                <select id="paymentMethodSelect" required style="width:100%; padding:10px; border:1px solid #cbd5e1; border-radius:6px; font-size:0.95rem; background:#fff;">
-                    <option value="" disabled selected>Loading your cards...</option>
+                <select id="paymentMethodSelect" required>
+                    <option value="WALLET" selected>💼 Wallet Balance</option>
+                    <option th:each="card : ${paymentMethods}" 
+                            th:value="${card.id}" 
+                            th:text="${(card.type.name() == 'CREDIT_CARD' ? '💳 ' : '🏦 ') + card.type.name().replace('_', ' ') + ' (' + card.accountNumberMasked + ')'}">
+                    </option>
+                    <option value="RAZORPAY">🌐 Razorpay (Online Payment)</option>
                 </select>
-                <small style="color:#64748b;">Select the debit or credit card to send from.</small>
+                <small class="text-secondary mt-1 d-block" style="font-size: 0.85rem;">Select the debit or credit card to send from.</small>
             </div>
 
-            <hr style="border:none; border-top:1px solid #e2e8f0; margin: 5px 0 20px 0;">
+            <hr style="border:none; border-top:1px solid var(--border); margin: 1.5rem 0;">
 
             <form id="sendMoneyForm" onsubmit="event.preventDefault(); handleSendMoney();">
                 <div class="form-group">
                     <label for="recipientIdentifier">Recipient (Email, Phone, or ID)</label>
-                    <input type="text" id="recipientIdentifier" required placeholder="Enter recipient's identifier">
+                    <input type="text" id="recipientIdentifier" required placeholder="name@example.com or +1 234...">
                 </div>
                 <div class="form-group">
                     <label for="amount">Amount ($)</label>
@@ -36,97 +44,84 @@
                     <label for="description">Description (Optional)</label>
                     <input type="text" id="description" placeholder="What is this for?">
                 </div>
-                <div class="form-group">
+                <div class="form-group mb-4">
                     <label for="pin">Transaction PIN</label>
-                    <input type="password" id="pin" required maxlength="6" placeholder="Enter 6-digit PIN">
+                    <input type="password" id="pin" required maxlength="6" placeholder="••••••" style="letter-spacing: 0.2em;">
                 </div>
 
-                <div id="errorMessage" class="error" style="display:none; margin-bottom: 10px;"></div>
-                <div id="pinHelpMsg" style="display:none; margin-bottom:10px; padding:10px; background:#fef3c7; border-left:4px solid #f59e0b; border-radius:6px; font-size:0.9rem;">
-                    💡 <strong>Haven't set a Transaction PIN yet?</strong>
-                    Go to <a href="/settings" style="color:#d97706; font-weight:700;">Account Settings → Transaction PIN</a> to set it, then come back here.
+                <div id="errorMessage" class="alert alert-error" style="display:none; margin-bottom: 1.25rem;"></div>
+                <div id="pinHelpMsg" class="alert" style="display:none; margin-bottom: 1.25rem; background:#fef3c7; border:1px solid #fde68a; color: #92400e;">
+                    💡 <strong>Haven't set a Transaction PIN yet?</strong><br>
+                    Go to <a href="/user/settings" style="color:#d97706; font-weight:700; text-decoration: underline;">Account Settings → Transaction PIN</a> to set it, then come back here.
                 </div>
-                <div id="successMessage" style="color: green; font-weight: 600; display:none; margin-bottom: 10px;"></div>
+                <div id="successMessage" class="alert alert-success" style="display:none; margin-bottom: 1.25rem;"></div>
 
-                <button type="submit" class="btn" style="width: 100%; padding: 12px; font-size: 1rem;">
+                <button type="submit" class="btn btn-primary" style="width: 100%; padding: 0.8rem; font-size: 1rem;">
                     ↗ Send Money
                 </button>
             </form>
         </div>
 
         <!-- No Cards Warning -->
-        <div id="noCardsWarning" class="card" style="max-width: 540px; margin-top: 15px; display: none; border-left: 4px solid #f59e0b; background: #fffbeb; padding: 15px 20px;">
-            <p style="margin: 0; font-weight: 600; color: #92400e;">⚠ No Payment Methods Found</p>
-            <p style="margin: 8px 0 0 0; color: #78350f; font-size: 0.9rem;">Please <a href="/payment-method/manage" style="color: #d97706; font-weight: 700;">add a debit or credit card</a> before sending money.</p>
+        <div id="noCardsWarning" class="card" style="max-width: 540px; margin-top: 1.5rem; display: none; border-left: 4px solid var(--warning); background: var(--warning-bg); padding: 1.5rem;">
+            <p style="margin: 0; font-weight: 700; color: var(--warning-text); display: flex; align-items: center; gap: 0.5rem;">
+                ⚠ No Payment Methods Found
+            </p>
+            <p style="margin: 0.5rem 0 0 0; color: var(--warning-text); font-size: 0.95rem;">
+                Please <a href="/payment-methods" style="font-weight: 700; text-decoration: underline;">add a debit or credit card</a> before sending money.
+            </p>
         </div>
     </div>
 
+    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+    <div style="clear: both;"></div>
     <div th:replace="~{fragments/layout :: footerFragment}"></div>
 
-    <script>
+    <script th:inline="javascript">
         document.addEventListener('DOMContentLoaded', async () => {
-            const userId = sessionStorage.getItem('userId');
-            if (!userId) return;
-
-            const select = document.getElementById('paymentMethodSelect');
-            const noCardsWarning = document.getElementById('noCardsWarning');
-
-            try {
-                const res = await fetchWithAuth(`/api/payment-methods/user/${userId}`);
-                if (res.ok) {
-                    const methods = await res.json();
-                    select.innerHTML = '';
-
-                    const cards = methods.filter(m => m.type === 'DEBIT_CARD' || m.type === 'CREDIT_CARD');
-
-                    if (cards.length === 0) {
-                        select.innerHTML = '<option value="" disabled selected>No cards available</option>';
-                        select.disabled = true;
-                        noCardsWarning.style.display = 'block';
-                        document.querySelector('#sendMoneyForm button[type="submit"]').disabled = true;
-                    } else {
-                        select.innerHTML = '<option value="" disabled selected>-- Select a card --</option>';
-                        cards.forEach(m => {
-                            const last4 = m.accountNumberMasked ? m.accountNumberMasked.slice(-4) : '****';
-                            const typeLabel = m.type === 'CREDIT_CARD' ? '💳 Credit' : '💰 Debit';
-                            const defLabel = m.default ? ' (Default)' : '';
-                            const opt = document.createElement('option');
-                            opt.value = m.id;
-                            opt.textContent = `${typeLabel} Card •••• ${last4}${defLabel}`;
-                            if (m.default) opt.selected = true;
-                            select.appendChild(opt);
-                        });
-                    }
-                }
-            } catch (e) {
-                select.innerHTML = '<option value="" disabled selected>Failed to load cards</option>';
-                console.error('Error loading payment methods', e);
-            }
+             // Initial render handled by Thymeleaf
         });
+
+        const currentUserId = /*[[${session.user.id}]]*/ null;
 
         async function handleSendMoney() {
             const btn = document.querySelector('#sendMoneyForm button[type="submit"]');
-            setButtonLoading(btn, true, 'Sending...');
+            setButtonLoading(btn, true, 'Processing...');
 
             const selectedCard = document.getElementById('paymentMethodSelect').value;
-            if (!selectedCard) {
-                document.getElementById('errorMessage').innerText = 'Please select a payment card.';
-                document.getElementById('errorMessage').style.display = 'block';
-                setButtonLoading(btn, false);
-                return;
-            }
-
-            const payload = {
-                senderId: parseInt(sessionStorage.getItem('userId')),
-                recipientIdentifier: document.getElementById('recipientIdentifier').value,
-                amount: parseFloat(document.getElementById('amount').value),
-                description: document.getElementById('description').value,
-                transactionPin: document.getElementById('pin').value,
-                paymentMethodId: parseInt(selectedCard)
-            };
+            const amount = parseFloat(document.getElementById('amount').value);
+            const recipientIdentifier = document.getElementById('recipientIdentifier').value;
+            const description = document.getElementById('description').value;
+            const transactionPin = document.getElementById('pin').value;
+            const userId = currentUserId;
 
             const errorDiv = document.getElementById('errorMessage');
             const successDiv = document.getElementById('successMessage');
+
+            errorDiv.style.display = 'none';
+            successDiv.style.display = 'none';
+
+            if (selectedCard === 'WALLET') {
+                proceedWithWalletSend(userId, recipientIdentifier, amount, description, transactionPin, btn, errorDiv, successDiv);
+            } else if (selectedCard === 'RAZORPAY') {
+                proceedWithRazorpaySend(userId, recipientIdentifier, amount, description, transactionPin, btn, errorDiv, successDiv);
+            } else {
+                errorDiv.innerText = 'Please select a payment method.';
+                errorDiv.style.display = 'block';
+                setButtonLoading(btn, false);
+            }
+        }
+
+        async function proceedWithWalletSend(userId, recipientIdentifier, amount, description, transactionPin, btn, errorDiv, successDiv) {
+            const payload = {
+                senderId: userId,
+                recipientIdentifier: recipientIdentifier,
+                amount: amount,
+                description: description,
+                transactionPin: transactionPin,
+                // Sending dummy paymentMethodId for wallet fallback
+                paymentMethodId: 0
+            };
 
             try {
                 const response = await fetch('/api/transactions/send', {
@@ -141,28 +136,122 @@
                 if (response.ok) {
                     successDiv.innerText = "✅ Transaction successful! A notification has been sent.";
                     successDiv.style.display = 'block';
-                    errorDiv.style.display = 'none';
                     document.getElementById('sendMoneyForm').reset();
                 } else {
                     const data = await response.json();
-                    throw new Error(data.message || "Transaction failed");
+                    throw new Error(data.message || data.error || "Transaction failed");
                 }
             } catch (err) {
                 errorDiv.innerText = err.message;
                 errorDiv.style.display = 'block';
-                successDiv.style.display = 'none';
-                // Show PIN help if error is about transaction PIN
-                const pinHelp = document.getElementById('pinHelpMsg');
-                if (err.message && err.message.toLowerCase().includes('pin')) {
-                    pinHelp.style.display = 'block';
-                } else {
-                    pinHelp.style.display = 'none';
-                }
+                showPinHelpIfNeeded(err.message);
             } finally {
                 setButtonLoading(btn, false);
+            }
+        }
+
+        async function proceedWithRazorpaySend(userId, recipientIdentifier, amount, description, transactionPin, btn, errorDiv, successDiv) {
+            try {
+                // 1. Create order on the server
+                const orderRes = await fetchWithAuth(`/api/payment/create-order`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ amount: amount, currency: 'USD' })
+                });
+
+                const orderData = await orderRes.json();
+
+                if (!orderData || !orderData.orderId) {
+                    throw new Error(orderData.message || "Failed to create order");
+                }
+
+                // 2. Initialize Razorpay Checkout
+                const options = {
+                    "key": orderData.keyId,
+                    "amount": orderData.amount,
+                    "currency": orderData.currency,
+                    "name": "RevPay",
+                    "description": "Send Money via Razorpay",
+                    "order_id": orderData.orderId,
+                    "handler": function (response) {
+                        // 3. Verify Payment and Send
+                        verifyAndSendRazorpayPayment(response, amount, userId, recipientIdentifier, description, transactionPin, btn, errorDiv, successDiv);
+                    },
+                    "modal": {
+                        "ondismiss": function () {
+                            setButtonLoading(btn, false);
+                        }
+                    },
+                    "prefill": {
+                        "name": "User",
+                        "email": "user@example.com"
+                    },
+                    "theme": {
+                        "color": "#3399cc"
+                    }
+                };
+                const rzp = new Razorpay(options);
+                rzp.on('payment.failed', function (response) {
+                    errorDiv.innerText = "Payment failed: " + response.error.description;
+                    errorDiv.style.display = "block";
+                    setButtonLoading(btn, false);
+                });
+                rzp.open();
+
+            } catch (err) {
+                console.error(err);
+                errorDiv.innerText = err.message || "Error creating Razorpay order";
+                errorDiv.style.display = "block";
+                setButtonLoading(btn, false);
+            }
+        }
+
+        async function verifyAndSendRazorpayPayment(paymentResponse, amount, userId, recipientIdentifier, description, transactionPin, btn, errorDiv, successDiv) {
+            setButtonLoading(btn, true, 'Verifying...');
+
+            try {
+                const res = await fetchWithAuth(`/api/payment/verify-and-send`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        userId: userId,
+                        amount: amount,
+                        razorpayPaymentId: paymentResponse.razorpay_payment_id,
+                        razorpayOrderId: paymentResponse.razorpay_order_id,
+                        razorpaySignature: paymentResponse.razorpay_signature,
+                        recipientIdentifier: recipientIdentifier,
+                        description: description,
+                        transactionPin: transactionPin
+                    })
+                });
+
+                if (res.ok) {
+                    const data = await res.json();
+                    successDiv.innerText = "✅ " + (data.message || "Payment verified and funds successfully sent.");
+                    successDiv.style.display = 'block';
+                    document.getElementById('sendMoneyForm').reset();
+                } else {
+                    const err = await res.json();
+                    throw new Error(err.error || err.message || "Payment verification failed");
+                }
+            } catch (err) {
+                errorDiv.innerText = err.message;
+                errorDiv.style.display = "block";
+                showPinHelpIfNeeded(err.message);
+            } finally {
+                setButtonLoading(btn, false);
+            }
+        }
+
+        function showPinHelpIfNeeded(errorMessage) {
+            const pinHelp = document.getElementById('pinHelpMsg');
+            if (errorMessage && errorMessage.toLowerCase().includes('pin')) {
+                pinHelp.style.display = 'block';
+            } else {
+                pinHelp.style.display = 'none';
             }
         }
     </script>
 </body>
 
-</html>
+</html>

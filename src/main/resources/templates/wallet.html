@@ -8,68 +8,93 @@
 <body>
     <div th:replace="~{fragments/layout :: headerFragment}"></div>
     <div class="main-content">
-        <h2>My Wallet</h2>
-
-        <div class="card" style="margin-bottom: 20px;">
-            <h3>Current Balance: <span id="walletBalance" style="color: #28a745;">$0.00</span></h3>
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1 style="font-size: 2rem; font-weight: 800; letter-spacing: -0.5px; margin: 0;">My Wallet</h1>
         </div>
 
-        <div style="display: flex; gap: 20px;">
+        <div class="enterprise-balance-card mb-4">
+            <h3 style="font-weight: 500; font-size:1.1rem; opacity:0.9; margin:0;">Current Balance</h3>
+            <div class="balance-amount" id="walletBalance" style="color: white;" th:text="${'$' + #numbers.formatDecimal(walletBalance ?: 0, 1, 2)}">$0.00</div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: 1.5rem;">
             <!-- Add Funds Form -->
-            <div class="card" style="flex:1;">
-                <h3>Add Funds</h3>
+            <div class="card" style="padding: 2rem;">
+                <h3 style="font-size: 1.25rem; font-weight: 700; margin-bottom: 1.5rem; color: var(--text-main);">Add
+                    Funds</h3>
                 <form id="addFundsForm" onsubmit="event.preventDefault(); addFunds();">
                     <div class="form-group">
                         <label for="addPaymentMethod">Payment Method</label>
                         <select id="addPaymentMethod" required>
                             <option value="" disabled selected>Select a mapped card</option>
+                            <option th:each="method : ${paymentMethods}" 
+                                    th:value="${method.id}" 
+                                    th:text="${'**** **** **** ' + method.accountNumberMasked.substring(method.accountNumberMasked.length() - 4) + ' (' + method.type + ')'}">
+                            </option>
                         </select>
                     </div>
                     <div class="form-group">
                         <label for="addAmount">Amount ($)</label>
-                        <input type="number" step="0.01" id="addAmount" required>
+                        <input type="number" step="0.01" id="addAmount" required placeholder="0.00">
                     </div>
                     <div class="form-group">
                         <label for="addPin">Transaction PIN</label>
-                        <input type="password" id="addPin" required>
+                        <input type="password" id="addPin" required placeholder="••••">
                     </div>
-                    <button type="submit" class="btn">Add to Wallet</button>
-                    <div id="addMsg" style="margin-top: 10px; color: green; display: none;"></div>
+                    <button type="submit" class="btn btn-primary"
+                        style="width: 100%; margin-top: 0.5rem; padding: 0.8rem;">Add to Wallet</button>
+                    <div id="addMsg" class="alert mt-2" style="display: none;"></div>
                 </form>
 
-                <hr style="margin: 20px 0; border: 0; border-top: 1px solid #eee;">
+                <div
+                    style="margin: 2rem 0; display: flex; align-items: center; text-align: center; color: var(--text-muted);">
+                    <hr style="flex: 1; border: 0; border-top: 1px solid var(--border);">
+                    <span style="padding: 0 1rem; font-size: 0.9rem; font-weight: 500;">Or</span>
+                    <hr style="flex: 1; border: 0; border-top: 1px solid var(--border);">
+                </div>
 
-                <h3 style="font-size: 1.1em; color: #555;">Or Add via Razorpay</h3>
+                <h3 style="font-size: 1.1rem; font-weight: 600; margin-bottom: 1rem; color: var(--text-main);">Add via
+                    Razorpay</h3>
                 <form id="razorpayForm" onsubmit="event.preventDefault(); addFundsRazorpay();">
-                    <div class="form-group">
-                        <label for="rzpAmount">Amount ($)</label>
-                        <input type="number" step="0.01" id="rzpAmount" required>
+                    <div class="form-group mb-3">
+                        <label for="rzpAmount">Amount ($) <span class="text-secondary"
+                                style="font-size: 0.8rem; font-weight: normal;">(Max $1,000)</span></label>
+                        <input type="number" step="0.01" min="1" max="1000" id="rzpAmount" required placeholder="0.00">
                     </div>
-                    <button type="submit" class="btn" style="background-color: #3399cc;">Pay with Razorpay</button>
-                    <div id="rzpMsg" style="margin-top: 10px; display: none;"></div>
+                    <button type="submit" class="btn"
+                        style="background-color: #3399cc; color: white; width: 100%; padding: 0.8rem;">Pay with
+                        Razorpay</button>
+                    <div id="rzpMsg" class="alert mt-2" style="display: none;"></div>
                 </form>
             </div>
 
             <!-- Withdraw Funds Form -->
-            <div class="card" style="flex:1;">
-                <h3>Withdraw Funds</h3>
+            <div class="card" style="padding: 2rem;">
+                <h3 style="font-size: 1.25rem; font-weight: 700; margin-bottom: 1.5rem; color: var(--text-main);">
+                    Withdraw Funds</h3>
                 <form id="withdrawFundsForm" onsubmit="event.preventDefault(); withdrawFunds();">
                     <div class="form-group">
                         <label for="withdrawPaymentMethod">Payment Method (Withdraw to)</label>
                         <select id="withdrawPaymentMethod" required>
                             <option value="" disabled selected>Select a mapped card</option>
+                            <option th:each="method : ${paymentMethods}" 
+                                    th:value="${method.id}" 
+                                    th:text="${'**** **** **** ' + method.accountNumberMasked.substring(method.accountNumberMasked.length() - 4) + ' (' + method.type + ')'}">
+                            </option>
                         </select>
                     </div>
                     <div class="form-group">
                         <label for="withdrawAmount">Amount ($)</label>
-                        <input type="number" step="0.01" id="withdrawAmount" required>
+                        <input type="number" step="0.01" id="withdrawAmount" required placeholder="0.00">
                     </div>
-                    <div class="form-group">
+                    <div class="form-group mb-4">
                         <label for="withdrawPin">Transaction PIN</label>
-                        <input type="password" id="withdrawPin" required>
+                        <input type="password" id="withdrawPin" required placeholder="••••">
                     </div>
-                    <button type="submit" class="btn" style="background-color: #dc3545;">Withdraw</button>
-                    <div id="withdrawMsg" style="margin-top: 10px; color: red; display: none;"></div>
+                    <button type="submit" class="btn"
+                        style="background-color: var(--danger); color: white; width: 100%; padding: 0.8rem;">Withdraw
+                        Funds</button>
+                    <div id="withdrawMsg" class="alert mt-2" style="display: none;"></div>
                 </form>
             </div>
         </div>
@@ -79,19 +104,16 @@
     <div style="clear: both;"></div>
     <div th:replace="~{fragments/layout :: footerFragment}"></div>
 
-    <script>
+    <script th:inline="javascript">
+        const currentUserId = /*[[${session.user.id}]]*/ null;
+
         document.addEventListener("DOMContentLoaded", function () {
-            if (!sessionStorage.getItem('jwtToken') || !sessionStorage.getItem('userId')) {
-                window.location.href = "/login";
-                return;
-            }
-            loadWalletBalance();
-            loadPaymentMethods();
+            // No initial fetch needed for balance/methods
         });
 
         function loadWalletBalance() {
-            const userId = sessionStorage.getItem('userId');
-            fetchWithAuth(`/api/wallets/user/${userId}`)
+            // Still useful for post-transaction updates
+            fetchWithAuth(`/api/wallets/user/${currentUserId}`)
                 .then(res => res.json())
                 .then(data => {
                     document.getElementById('walletBalance').innerText = '$' + data.balance.toFixed(2);
@@ -99,31 +121,16 @@
         }
 
         function loadPaymentMethods() {
-            const userId = sessionStorage.getItem('userId');
-            fetchWithAuth(`/api/payment-methods/user/${userId}`)
-                .then(res => res.json())
-                .then(methods => {
-                    const addSelect = document.getElementById('addPaymentMethod');
-                    const withdrawSelect = document.getElementById('withdrawPaymentMethod');
-
-                    methods.forEach(method => {
-                        const maskedCard = `**** **** **** ${method.accountNumber.slice(-4)} (${method.type})`;
-                        const option1 = new Option(maskedCard, method.id);
-                        const option2 = new Option(maskedCard, method.id);
-                        addSelect.add(option1);
-                        withdrawSelect.add(option2);
-                    });
-                })
-                .catch(err => console.error("Error loading payment methods", err));
+             // Reload page to refresh server-rendered list if needed, or just keep as is
+             window.location.reload();
         }
 
         function addFunds() {
             const amount = document.getElementById('addAmount').value;
             const paymentMethodId = document.getElementById('addPaymentMethod').value;
             const transactionPin = document.getElementById('addPin').value;
-            const userId = sessionStorage.getItem('userId');
 
-            fetchWithAuth(`/api/wallets/user/${userId}/add?amount=${amount}&paymentMethodId=${paymentMethodId}&transactionPin=${encodeURIComponent(transactionPin)}`, { method: 'POST' })
+            fetchWithAuth(`/api/wallets/user/${currentUserId}/add?amount=${amount}&paymentMethodId=${paymentMethodId}&transactionPin=${encodeURIComponent(transactionPin)}`, { method: 'POST' })
                 .then(res => {
                     if (res.ok) {
                         document.getElementById('addMsg').innerText = "Funds added successfully!";
@@ -145,9 +152,8 @@
             const amount = document.getElementById('withdrawAmount').value;
             const paymentMethodId = document.getElementById('withdrawPaymentMethod').value;
             const transactionPin = document.getElementById('withdrawPin').value;
-            const userId = sessionStorage.getItem('userId');
 
-            fetchWithAuth(`/api/wallets/user/${userId}/withdraw?amount=${amount}&paymentMethodId=${paymentMethodId}&transactionPin=${encodeURIComponent(transactionPin)}`, { method: 'POST' })
+            fetchWithAuth(`/api/wallets/user/${currentUserId}/withdraw?amount=${amount}&paymentMethodId=${paymentMethodId}&transactionPin=${encodeURIComponent(transactionPin)}`, { method: 'POST' })
                 .then(res => {
                     if (res.ok) {
                         document.getElementById('withdrawMsg').innerText = "Funds withdrawn successfully!";
@@ -167,7 +173,6 @@
 
         function addFundsRazorpay() {
             const amount = document.getElementById('rzpAmount').value;
-            const userId = sessionStorage.getItem('userId');
             const rzpMsg = document.getElementById('rzpMsg');
 
             rzpMsg.style.display = 'none';
@@ -194,7 +199,7 @@
                         "order_id": orderData.orderId,
                         "handler": function (response) {
                             // 3. Verify Payment
-                            verifyRazorpayPayment(response, amount, userId);
+                            verifyRazorpayPayment(response, amount, currentUserId);
                         },
                         "prefill": {
                             "name": "User",

@@ -301,9 +301,24 @@
                 </form>
             </div>
         </div>
+        <!-- User Details Modal -->
+        <div id="userDetailsModal" class="modal"
+            style="display:none; position:fixed; z-index:1000; left:0; top:0; width:100%; height:100%; background-color:rgba(0,0,0,0.5); overflow-y:auto;">
+            <div class="modal-content"
+                style="background-color:#fff; margin:5% auto; padding:30px; border-radius:12px; width:90%; max-width:700px; position:relative;">
+                <button onclick="closeModal('userDetailsModal')"
+                    style="position:absolute; right:20px; top:20px; background:none; border:none; font-size:1.5rem; cursor:pointer;">&times;</button>
+                <h3 style="margin-top:0; color:#1e1b4b; font-size:1.5rem;">User Details</h3>
+                
+                <div id="userDetailsContent" style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top:20px;">
+                    <!-- Content will be injected via JS -->
+                </div>
+            </div>
+        </div>
     </div>
 
     <div th:replace="~{fragments/layout :: footerFragment}"></div>
+    <div class="main-content" id="appMainContent"></div>
 
     <script>
         let currentPage = 0;
@@ -369,6 +384,7 @@
                                     '<span style="color: #ef4444; font-weight: 600; font-size: 0.85rem;">Inactive</span>'}
                                     </td>
                                     <td style="padding: 15px 10px;">
+                                        <button onclick="viewUserDetails(${u.id})" class="btn btn-sm" style="background:#64748b; font-size: 0.8rem; padding: 4px 8px; margin-right:5px;">Info</button>
                                         <button onclick="openUserModal(${u.id})" class="btn btn-sm" style="background:#3b82f6; font-size: 0.8rem; padding: 4px 8px; margin-right:5px;">Edit Profile</button>
                                         <button onclick="openBalanceModal(${u.id}, '${u.fullName || u.email}')" class="btn btn-sm" style="font-size: 0.8rem; padding: 4px 8px;">Adjust Balance</button>
                                     </td>
@@ -433,12 +449,12 @@
             });
         }
         document.addEventListener('DOMContentLoaded', async () => {
-            const userStr = sessionStorage.getItem('user');
-
-            if (!userStr || JSON.parse(userStr).role !== 'ADMIN') {
-                document.body.innerHTML = "<h2 style='text-align:center; padding: 50px; color:red;'>Access Denied. Admins Only.</h2>";
-                return;
-            }
+            // Role check handled by controller
+            // const userStr = sessionStorage.getItem('user');
+            // if (!userStr || JSON.parse(userStr).role !== 'ADMIN') {
+            //     document.body.innerHTML = "<h2 style='text-align:center; padding: 50px; color:red;'>Access Denied. Admins Only.</h2>";
+            //     return;
+            // }
 
             try {
                 // Fetch metrics
@@ -519,6 +535,38 @@
             const role = document.getElementById('userRole').value;
             const biz = document.getElementById('businessFields');
             biz.style.display = role === 'BUSINESS' ? 'block' : 'none';
+        }
+
+        function viewUserDetails(userId) {
+            const user = allUsersData.find(u => u.id === userId);
+            if (!user) return;
+            
+            const content = document.getElementById('userDetailsContent');
+            content.innerHTML = `
+                <div><strong>ID:</strong> #${user.id}</div>
+                <div><strong>Full Name:</strong> ${user.fullName || '-'}</div>
+                <div><strong>Email:</strong> ${user.email || '-'}</div>
+                <div><strong>Phone Number:</strong> ${user.phoneNumber || '-'}</div>
+                <div><strong>Role:</strong> ${user.role || '-'}</div>
+                <div><strong>Status:</strong> ${user.isActive ? 'Active' : 'Inactive'}</div>
+                <div><strong>Security Question:</strong> ${user.securityQuestion || '-'}</div>
+                <div><strong>Security Answer:</strong> ${user.securityAnswer || '*****'}</div>
+                <div style="grid-column: span 2; margin-top: 15px; border-top: 1px solid #e2e8f0; padding-top: 15px;">
+                    <strong>Alerts:</strong> Transaction DB Alerts (${user.transactionAlerts}), Security Alerts (${user.securityAlerts})
+                </div>
+                ${user.role === 'BUSINESS' ? `
+                    <div style="grid-column: span 2; margin-top: 15px; border-top: 1px solid #e2e8f0; padding-top: 15px;">
+                        <h4 style="margin:0 0 10px 0; color:#334155;">Business Information</h4>
+                    </div>
+                    <div><strong>Business Name:</strong> ${user.businessName || '-'}</div>
+                    <div><strong>Business Type:</strong> ${user.businessType || '-'}</div>
+                    <div><strong>Tax ID:</strong> ${user.taxId || '-'}</div>
+                    <div><strong>Is Verified:</strong> ${user.isBusinessVerified ? 'Yes' : 'No'}</div>
+                    <div style="grid-column: span 2;"><strong>Business Address:</strong><br/>${user.businessAddress || '-'}</div>
+                ` : ''}
+            `;
+            
+            document.getElementById('userDetailsModal').style.display = 'block';
         }
 
         function openUserModal(userId = null) {

@@ -42,13 +42,14 @@
         </h2>
 
         <div class="card" style="padding: 20px;">
-            <div id="loader" style="text-align:center; padding: 20px;">Loading invoices...</div>
+            <div th:if="${#lists.isEmpty(invoices)}" style="text-align:center; padding: 20px;">
+                No invoices found.
+            </div>
 
-            <div id="invoiceContainer" style="display:none; overflow-x: auto;">
+            <div th:if="${!#lists.isEmpty(invoices)}" id="invoiceContainer" style="overflow-x: auto;">
                 <table style="width: 100%; border-collapse: collapse; text-align: left;">
                     <thead>
-                        <tr
-                            style="border-bottom: 2px solid #e2e8f0; color: #64748b; font-size: 0.85rem; text-transform: uppercase;">
+                        <tr style="border-bottom: 2px solid #e2e8f0; color: #64748b; font-size: 0.85rem; text-transform: uppercase;">
                             <th style="padding: 15px 10px;">ID</th>
                             <th style="padding: 15px 10px;">Customer</th>
                             <th style="padding: 15px 10px;">Due Date</th>
@@ -58,7 +59,29 @@
                         </tr>
                     </thead>
                     <tbody id="invoiceBody">
-                        <!-- Populated by JS -->
+                        <tr th:each="inv : ${invoices}" style="border-bottom: 1px solid #f1f5f9;">
+                            <td style="padding: 15px 10px; font-weight: bold; color: #64748b;" th:text="${'#INV-' + inv.id}"></td>
+                            <td style="padding: 15px 10px;">
+                                <div style="font-weight: 500;" th:text="${inv.customerName}"></div>
+                                <div style="font-size: 0.8rem; color: #94a3b8;" th:text="${inv.customerEmail}"></div>
+                            </td>
+                            <td style="padding: 15px 10px; color: #475569;" th:text="${inv.dueDate}"></td>
+                            <td style="padding: 15px 10px; font-weight: bold;" th:text="${'$' + #numbers.formatDecimal(inv.totalAmount, 1, 2)}"></td>
+                            <td style="padding: 15px 10px;">
+                                <span th:class="'status-' + ${inv.status.name().toLowerCase()}" 
+                                      style="padding: 4px 10px; border-radius: 12px; font-size: 0.75rem; font-weight: 700; text-transform: uppercase;"
+                                      th:text="${inv.status}">
+                                </span>
+                            </td>
+                            <td style="padding: 15px 10px; text-align: right;">
+                                <div th:if="${inv.status.name() == 'DRAFT'}">
+                                    <button th:onclick="'sendInvoice(' + ${inv.id} + ')'" class="btn" style="padding: 6px 12px; font-size: 0.8rem; background: #8b5cf6;">Send</button>
+                                </div>
+                                <div th:if="${inv.status.name() == 'SENT' || inv.status.name() == 'OVERDUE'}">
+                                    <button th:onclick="'markAsPaid(' + ${inv.id} + ')'" class="btn" style="padding: 6px 12px; font-size: 0.8rem; background: #10b981;">Mark Paid</button>
+                                </div>
+                            </td>
+                        </tr>
                     </tbody>
                 </table>
             </div>
@@ -68,97 +91,41 @@
 
     <div th:replace="~{fragments/layout :: footerFragment}"></div>
 
-    <script>
-        document.addEventListener('DOMContentLoaded', loadInvoices);
-
-        async function loadInvoices() {
-            const userStr = sessionStorage.getItem('user');
-            if (!userStr || JSON.parse(userStr).role !== 'BUSINESS') {
-                window.location.href = '/dashboard';
-                return;
-            }
-            const user = JSON.parse(userStr);
-            const container = document.getElementById('invoiceContainer');
-            const loader = document.getElementById('loader');
-            const tbody = document.getElementById('invoiceBody');
-
-            try {
-                const res = await fetchWithAuth(`/api/invoices/business/${user.id}`);
-                if (res.ok) {
-                    const invoices = await res.json();
-                    tbody.innerHTML = '';
-
-                    if (invoices.length === 0) {
-                        tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding: 20px;">No invoices found.</td></tr>';
-                    } else {
-                        invoices.reverse().forEach(inv => { // Show newest first
-                            const statusCls = `status-${inv.status.toLowerCase()}`;
-                            let actionHtml = '';
-
-                            // Build contextual actions based on status
-                            if (inv.status === 'DRAFT') {
-                                actionHtml = `<button onclick="sendInvoice(${inv.id})" class="btn" style="padding: 6px 12px; font-size: 0.8rem; background: #8b5cf6;">Send</button>`;
-                            } else if (inv.status === 'SENT' || inv.status === 'OVERDUE') {
-                                actionHtml = `<button onclick="markAsPaid(${inv.id})" class="btn" style="padding: 6px 12px; font-size: 0.8rem; background: #10b981;">Mark Paid</button>`;
-                            }
-
-                            tbody.innerHTML += `
-                                <tr style="border-bottom: 1px solid #f1f5f9;">
-                                    <td style="padding: 15px 10px; font-weight: bold; color: #64748b;">#INV-${inv.id}</td>
-                                    <td style="padding: 15px 10px;">
-                                        <div style="font-weight: 500;">${inv.customerName}</div>
-                                        <div style="font-size: 0.8rem; color: #94a3b8;">${inv.customerEmail}</div>
-                                    </td>
-                                    <td style="padding: 15px 10px; color: #475569;">${inv.dueDate}</td>
-                                    <td style="padding: 15px 10px; font-weight: bold;">$${inv.totalAmount.toLocaleString(undefined, { minimumFractionDigits: 2 })}</td>
-                                    <td style="padding: 15px 10px;">
-                                        <span class="${statusCls}" style="padding: 4px 10px; border-radius: 12px; font-size: 0.75rem; font-weight: 700; text-transform: uppercase;">
-                                            ${inv.status}
-                                        </span>
-                                    </td>
-                                    <td style="padding: 15px 10px; text-align: right;">
-                                        ${actionHtml}
-                                    </td>
-                                </tr>
-                            `;
-                        });
-                    }
-                    loader.style.display = 'none';
-                    container.style.display = 'block';
-                } else {
-                    throw new Error("Failed to load invoices.");
-                }
-            } catch (err) {
-                loader.style.display = 'none';
-                document.getElementById('errorMsg').innerText = err.message;
-                document.getElementById('errorMsg').style.display = 'block';
-            }
-        }
+    <script th:inline="javascript">
+        document.addEventListener('DOMContentLoaded', () => {
+             // Initial render handled by Thymeleaf
+        });
 
         async function sendInvoice(id) {
-            if (!confirm("Are you sure you want to send this invoice to the customer?")) return;
-            try {
-                const res = await fetchWithAuth(`/api/invoices/${id}/send-notification`, { method: 'POST' });
-                if (res.ok) {
-                    alert('Invoice notification sent!');
-                    loadInvoices();
-                } else {
-                    alert('Failed to send invoice.');
-                }
-            } catch (e) { console.error(e); }
+             if (!confirm("Are you sure you want to send this invoice to the customer?")) return;
+             try {
+                 const res = await fetch(`/api/invoices/${id}/send-notification`, { 
+                     method: 'POST',
+                     headers: { 'Authorization': 'Bearer ' + sessionStorage.getItem('token') }
+                 });
+                 if (res.ok) {
+                     alert('Invoice notification sent!');
+                     window.location.reload();
+                 } else {
+                     alert('Failed to send invoice.');
+                 }
+             } catch (e) { console.error(e); }
         }
 
         async function markAsPaid(id) {
-            if (!confirm("Mark this invoice as Paid?")) return;
-            try {
-                const res = await fetchWithAuth(`/api/invoices/${id}/pay`, { method: 'PUT' });
-                if (res.ok) {
-                    alert('Invoice marked as paid!');
-                    loadInvoices();
-                } else {
-                    alert('Failed to update invoice.');
-                }
-            } catch (e) { console.error(e); }
+             if (!confirm("Mark this invoice as Paid?")) return;
+             try {
+                 const res = await fetch(`/api/invoices/${id}/pay`, { 
+                     method: 'PUT',
+                     headers: { 'Authorization': 'Bearer ' + sessionStorage.getItem('token') }
+                 });
+                 if (res.ok) {
+                     alert('Invoice marked as paid!');
+                     window.location.reload();
+                 } else {
+                     alert('Failed to update invoice.');
+                 }
+             } catch (e) { console.error(e); }
         }
     </script>
 </body>

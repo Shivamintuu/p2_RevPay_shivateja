@@ -31,6 +31,7 @@ class AuthRestControllerTest {
     private JwtProvider jwtProvider;
     private IEmailService emailService;
     private IUserRepository userRepository;
+    private org.springframework.security.crypto.password.PasswordEncoder passwordEncoder;
     private AuthRestController authRestController;
 
     @BeforeEach
@@ -40,7 +41,8 @@ class AuthRestControllerTest {
         jwtProvider = mock(JwtProvider.class);
         emailService = mock(IEmailService.class);
         userRepository = mock(IUserRepository.class);
-        authRestController = new AuthRestController(userService, authenticationManager, jwtProvider, emailService, userRepository);
+        passwordEncoder = mock(org.springframework.security.crypto.password.PasswordEncoder.class);
+        authRestController = new AuthRestController(userService, authenticationManager, jwtProvider, emailService, userRepository, passwordEncoder);
     }
 
     @Test

@@ -22,7 +22,7 @@ public class EmailServiceImpl implements IEmailService {
         log.info("Sending OTP email to {}", to);
         try {
             SimpleMailMessage message = new SimpleMailMessage();
-            message.setFrom("revpay.demo@gmail.com");
+            message.setFrom("shivamintu964@gmail.com");
             message.setTo(to);
             message.setSubject("RevPay - Login OTP");
             message.setText("Your OTP for RevPay login is: " + otp + "\n\nThis OTP is valid for 5 minutes.");

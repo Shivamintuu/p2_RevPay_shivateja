@@ -35,7 +35,7 @@ function checkAuthState() {
         if (logoutLink) logoutLink.style.display = 'inline';
 
         // Role-based visibility
-        if (user.role === 'BUSINESS') {
+        if (user.role === 'BUSINESS' || user.role === 'ADMIN') {
             if (navInvoices) navInvoices.style.display = 'inline';
             if (navLoans) navLoans.style.display = 'inline';
             if (navAnalytics) navAnalytics.style.display = 'inline';
@@ -43,7 +43,9 @@ function checkAuthState() {
             // Show business-specific dashboard widgets if we're on the dashboard
             const businessKpis = document.querySelectorAll('.business-only');
             businessKpis.forEach(el => el.style.display = 'flex');
-        } else if (user.role === 'ADMIN') {
+        } 
+        
+        if (user.role === 'ADMIN') {
             if (navAdmin) navAdmin.style.display = 'inline';
         }
 
@@ -71,7 +73,7 @@ function checkAuthState() {
         if (logoutLink) logoutLink.style.display = 'none';
 
         // If we are on a protected page, redirect to login
-        const protectedPaths = ['/dashboard', '/transaction', '/wallet', '/profile', '/settings', '/notifications', '/money-request', '/payment-method'];
+        const protectedPaths = ['/dashboard', '/transaction', '/wallet', '/user/profile', '/user/settings', '/notifications', '/money-request', '/payment-method'];
         const currentPath = window.location.pathname;
         const isProtected = protectedPaths.some(p => currentPath.startsWith(p));
 
@@ -94,7 +96,12 @@ function handleLoginSuccess(user, token) {
     window.location.href = '/dashboard';
 }
 
-function handleLogout() {
+async function handleLogout() {
+    try {
+        await fetch('/api/auth/logout', { method: 'POST' });
+    } catch (e) {
+        console.error("Logout error", e);
+    }
     sessionStorage.clear();
     window.location.href = '/login';
 }

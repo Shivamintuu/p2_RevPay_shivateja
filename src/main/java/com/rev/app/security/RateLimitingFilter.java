@@ -22,7 +22,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 @Component
 public class RateLimitingFilter extends OncePerRequestFilter {
 
-    private static final int MAX_REQUESTS_PER_MINUTE = 100;
+    private static final int MAX_REQUESTS_PER_MINUTE = 500;
     private final ConcurrentHashMap<String, AtomicInteger> requestCounts = new ConcurrentHashMap<>();
 
     public RateLimitingFilter() {

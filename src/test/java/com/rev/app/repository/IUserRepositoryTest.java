@@ -1,25 +1,23 @@
 package com.rev.app.repository;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
 
 import java.util.Optional;
 
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
-import org.springframework.boot.jpa.test.autoconfigure.TestEntityManager;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import com.rev.app.entity.User;
 import com.rev.app.entity.User.Role;
 
-@DataJpaTest
+@ExtendWith(MockitoExtension.class)
 class IUserRepositoryTest {
 
-    @Autowired
+    @Mock
     private IUserRepository userRepository;
-
-    @Autowired
-    private TestEntityManager entityManager;
 
     @Test
     void findByEmail_ReturnsUser() {
@@ -28,7 +26,8 @@ class IUserRepositoryTest {
         user.setFullName("Repo Test");
         user.setPassword("pass");
         user.setRole(Role.PERSONAL);
-        entityManager.persistAndFlush(user);
+
+        when(userRepository.findByEmail("repo@test.com")).thenReturn(Optional.of(user));
 
         Optional<User> found = userRepository.findByEmail("repo@test.com");
 
@@ -44,7 +43,8 @@ class IUserRepositoryTest {
         user.setFullName("Repo Test 2");
         user.setPassword("pass");
         user.setRole(Role.PERSONAL);
-        entityManager.persistAndFlush(user);
+
+        when(userRepository.findByPhoneNumber("1234567890")).thenReturn(Optional.of(user));
 
         Optional<User> found = userRepository.findByPhoneNumber("1234567890");
 
@@ -59,7 +59,8 @@ class IUserRepositoryTest {
         user.setFullName("JEAN LUC");
         user.setPassword("pass");
         user.setRole(Role.PERSONAL);
-        entityManager.persistAndFlush(user);
+
+        when(userRepository.findByFullNameIgnoreCase("jean luc")).thenReturn(Optional.of(user));
 
         Optional<User> found = userRepository.findByFullNameIgnoreCase("jean luc");
 

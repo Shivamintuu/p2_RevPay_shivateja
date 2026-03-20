@@ -30,14 +30,16 @@ public class AuthRestController {
     private final JwtProvider jwtProvider;
     private final com.rev.app.service.IEmailService emailService;
     private final com.rev.app.repository.IUserRepository userRepository;
+    private final org.springframework.security.crypto.password.PasswordEncoder passwordEncoder; // Added
 
     @Autowired
-    public AuthRestController(IUserService userService, AuthenticationManager authenticationManager, JwtProvider jwtProvider, com.rev.app.service.IEmailService emailService, com.rev.app.repository.IUserRepository userRepository) {
+    public AuthRestController(IUserService userService, AuthenticationManager authenticationManager, JwtProvider jwtProvider, com.rev.app.service.IEmailService emailService, com.rev.app.repository.IUserRepository userRepository, org.springframework.security.crypto.password.PasswordEncoder passwordEncoder) {
         this.userService = userService;
         this.authenticationManager = authenticationManager;
         this.jwtProvider = jwtProvider;
         this.emailService = emailService;
         this.userRepository = userRepository;
+        this.passwordEncoder = passwordEncoder;
     }
 
     @PostMapping("/register/personal")
@@ -90,7 +92,7 @@ public class AuthRestController {
     }
 
     @PostMapping("/verify-otp")
-    public ResponseEntity<?> verifyOtp(@RequestBody VerifyOtpRequest request) {
+    public ResponseEntity<?> verifyOtp(@RequestBody VerifyOtpRequest request, jakarta.servlet.http.HttpSession session) {
         com.rev.app.entity.User user = userRepository.findByEmail(request.getEmail())
                 .orElseThrow(() -> new com.rev.app.exception.ResourceNotFoundException("User not found"));
 
@@ -107,17 +109,13 @@ public class AuthRestController {
         user.setTwoFactorOtpExpiry(null);
         userRepository.save(user);
 
-    // OTP is valid, clear it
-        user.setTwoFactorOtp(null);
-        user.setTwoFactorOtpExpiry(null);
-        userRepository.save(user);
+        // Populate Session for Thymeleaf
+        session.setAttribute("user", user);
 
         // Generate JWT
-        Authentication authentication = new UsernamePasswordAuthenticationToken(user.getEmail(), null, java.util.Collections.emptyList());
-        // Getting UserDetails requires loading user, or we can just use the email
-        // Wait, JwtProvider expects UserDetails.
+        org.springframework.security.core.GrantedAuthority authority = new org.springframework.security.core.authority.SimpleGrantedAuthority("ROLE_" + user.getRole().name());
         org.springframework.security.core.userdetails.UserDetails userDetails = 
-                (org.springframework.security.core.userdetails.UserDetails) new org.springframework.security.core.userdetails.User(user.getEmail(), "", java.util.Collections.emptyList());
+                new org.springframework.security.core.userdetails.User(user.getEmail(), "", java.util.Collections.singletonList(authority));
         String jwt = jwtProvider.generateToken(userDetails);
 
         UserDTO userDTO = userService.getUserByEmail(request.getEmail());
@@ -176,12 +174,17 @@ public class AuthRestController {
         user.setTwoFactorOtp(null);
         user.setTwoFactorOtpExpiry(null);
 
-        org.springframework.security.crypto.password.PasswordEncoder encoder = new org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder();
-        user.setPassword(encoder.encode(request.getNewPassword()));
+        user.setPassword(passwordEncoder.encode(request.getNewPassword()));
         
         userRepository.save(user);
 
         return ResponseEntity.ok(Map.of("message", "Password has been successfully reset. You can now login."));
+    }
+
+    @PostMapping("/logout")
+    public ResponseEntity<?> logout(jakarta.servlet.http.HttpSession session) {
+        session.invalidate();
+        return ResponseEntity.ok(Map.of("message", "Logged out successfully"));
     }
 
     // Inner classes for Request Bodies

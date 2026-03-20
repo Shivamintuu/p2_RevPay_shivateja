@@ -14,7 +14,7 @@ public class WalletMapper {
 
         WalletDTO dto = new WalletDTO();
         dto.setId(wallet.getId());
-        dto.setBalance(wallet.getBalance());
+        dto.setBalance(wallet.getBalance() != null ? wallet.getBalance() : java.math.BigDecimal.ZERO);
         
         if (wallet.getUser() != null) {
             dto.setUserId(wallet.getUser().getId());

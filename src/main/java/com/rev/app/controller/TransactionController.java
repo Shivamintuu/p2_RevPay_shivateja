@@ -1,6 +1,10 @@
 package com.rev.app.controller;
 
+import com.rev.app.entity.User;
+import jakarta.servlet.http.HttpSession;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 
@@ -8,18 +12,21 @@ import org.springframework.web.bind.annotation.RequestMapping;
 @RequestMapping("/transaction")
 public class TransactionController {
 
-    @GetMapping("/history")
-    public String showTransactionHistory() {
-        return "transactions";
-    }
+    @Autowired
+    private com.rev.app.service.IPaymentMethodService paymentMethodService;
+
 
     @GetMapping("/send")
-    public String showSendMoneyPage() {
-        return "send_money"; // e.g. send_money.html
+    public String showSendMoneyPage(HttpSession session, Model model) {
+        User user = (User) session.getAttribute("user");
+        if (user == null) return "redirect:/login";
+        model.addAttribute("user", user);
+        model.addAttribute("paymentMethods", paymentMethodService.getPaymentMethodsByUserId(user.getId()));
+        return "send_money";
     }
 
     @GetMapping("/requests")
     public String showMoneyRequestsPage() {
-        return "money_requests";
+        return "redirect:/money-request/manage";
     }
 }

@@ -17,27 +17,29 @@
     <!-- Top Header -->
     <header th:fragment="headerFragment">
         <div class="logo">
-            <h2 style="margin:0;"><a th:href="@{/}" style="color:white; text-decoration:none;">RevPay</a></h2>
+            <h2 style="margin:0;">
+                <a th:href="@{/}">RevPay</a>
+            </h2>
         </div>
         <div class="nav-links">
-            <span id="authenticatedLinks" style="display:none;">
+            <span th:if="${session.user != null}" id="authenticatedLinks" style="display:flex; gap:1.5rem; align-items:center;">
                 <a th:href="@{/dashboard}" id="navDashboard">Dashboard</a>
-                <a th:href="@{/transaction/history}" id="navTransactions">Transactions</a>
+                <a th:href="@{/history}" id="navTransactions">Transactions</a>
                 <a th:href="@{/money-request/manage}" id="navRequests">Requests</a>
                 <a th:href="@{/payment-method/manage}" id="navCards">Cards</a>
                 <a th:href="@{/notifications}" id="navNotifications">Notifications</a>
-                <a th:href="@{/admin}" id="navAdmin" style="display:none;">Admin</a>
-                <a th:href="@{/invoice/manage}" id="navInvoices" style="display:none;">Invoices</a>
-                <a th:href="@{/loan/status}" id="navLoans" style="display:none;">Loans</a>
-                <a th:href="@{/business/analytics}" id="navAnalytics" style="display:none;">Analytics</a>
+                <a th:if="${session.user.role.name() == 'ADMIN'}" th:href="@{/admin}" id="navAdmin">Admin</a>
+                <a th:if="${session.user.role.name() == 'BUSINESS'}" th:href="@{/invoice/manage}" id="navInvoices">Invoices</a>
+                <a th:if="${session.user.role.name() == 'BUSINESS'}" th:href="@{/loan/status}" id="navLoans">Loans</a>
+                <a th:if="${session.user.role.name() == 'BUSINESS'}" th:href="@{/business/analytics}" id="navAnalytics">Analytics</a>
             </span>
-            <span class="auth-nav">
+            <span class="auth-nav" th:if="${session.user != null}">
                 <a th:href="@{/user/profile}" id="navProfile">Profile</a>
-                <a href="#" onclick="handleLogout()" id="logoutLink" style="display:none;">Logout</a>
+                <button onclick="handleLogout()" id="logoutLink" class="btn btn-outline" style="padding:0.4rem 1rem;">Logout</button>
             </span>
-            <span class="auth-nav guest-only">
-                <a th:href="@{/login}" id="loginLink">Login</a>
-                <a th:href="@{/register}" id="registerLink">Register</a>
+            <span class="auth-nav guest-only" th:if="${session.user == null}">
+                <a th:href="@{/login}" id="loginLink" style="font-weight:600;">Login</a>
+                <a th:href="@{/register}" id="registerLink" class="btn btn-primary" style="padding:0.4rem 1.25rem;">Sign Up</a>
             </span>
         </div>
     </header>

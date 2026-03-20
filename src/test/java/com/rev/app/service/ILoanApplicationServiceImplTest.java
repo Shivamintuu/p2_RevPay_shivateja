@@ -99,7 +99,7 @@ class ILoanApplicationServiceImplTest {
 
         assertNotNull(result);
         assertEquals(LoanStatus.APPROVED, loan.getStatus());
-        verify(walletService).addFunds(eq(3L), any(BigDecimal.class), eq(null));
+        verify(walletService).adminAddFunds(eq(3L), any(BigDecimal.class));
     }
 
     @Test

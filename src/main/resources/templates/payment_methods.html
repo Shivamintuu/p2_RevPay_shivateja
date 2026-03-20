@@ -9,20 +9,38 @@
     <div th:replace="~{fragments/layout :: headerFragment}"></div>
 
     <div class="main-content">
-        <h2>Payment Methods</h2>
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1 style="font-size: 2rem; font-weight: 800; letter-spacing: -0.5px; margin: 0;">Payment Methods</h1>
+        </div>
 
-        <div style="display: flex; gap: 30px; flex-wrap: wrap; align-items: flex-start;">
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: 1.5rem; align-items: start;">
             <!-- Left Column: Saved Methods -->
-            <div class="card" style="flex: 1; min-width: 300px;">
-                <h3>Saved Methods</h3>
-                <div id="pmLoader">Loading payment methods...</div>
-                <div id="pmList" style="display:none;"></div>
-                <p id="noPm" style="display:none;">No payment methods saved yet.</p>
+            <div class="card" style="padding: 2rem;">
+                <h3 style="font-size: 1.25rem; font-weight: 700; margin-bottom: 1.5rem; color: var(--text-main);">Saved Methods</h3>
+                
+                <div th:if="${#lists.isEmpty(paymentMethods)}" id="noPm" class="text-center text-muted" style="padding: 2rem;">
+                    <div style="font-size: 2.5rem; margin-bottom: 1rem; opacity: 0.5;">💳</div>
+                    <p>No payment methods saved yet.</p>
+                </div>
+
+                <div th:if="${!#lists.isEmpty(paymentMethods)}" id="pmList" style="display: flex; flex-direction: column; gap: 1rem;">
+                    <div th:each="pm : ${paymentMethods}" style="padding: 15px; border: 1px solid var(--border-color); border-radius: 8px; margin-bottom: 15px; display:flex; justify-content:space-between; align-items:center; background:#f8fafc;">
+                        <div>
+                            <div style="font-weight: 600; color: var(--text-main); font-size: 1.1rem; letter-spacing: 1px;"
+                                 th:text="${'**** **** **** ' + pm.accountNumberMasked.substring(pm.accountNumberMasked.length() - 4)}">
+                            </div>
+                            <div style="font-size: 0.85rem; color: var(--text-secondary); margin-top: 4px;"
+                                 th:text="${pm.type.name().replace('_', ' ')}">
+                            </div>
+                        </div>
+                        <button th:onclick="'deleteMethod(' + ${pm.id} + ')'" class="btn-sm" style="background:var(--danger); border:none; color:white; padding:6px 12px; border-radius:4px; font-weight:500;">Remove</button>
+                    </div>
+                </div>
             </div>
 
             <!-- Right Column: Add Payment Method -->
-            <div class="card" style="flex: 1; min-width: 300px; max-width: 500px;">
-                <h3>Add Payment Method</h3>
+            <div class="card" style="padding: 2rem;">
+                <h3 style="font-size: 1.25rem; font-weight: 700; margin-bottom: 1.5rem; color: var(--text-main);">Add Payment Method</h3>
                 <form id="addPaymentForm" onsubmit="event.preventDefault(); handleAddPayment();">
                     <div class="form-group">
                         <label for="methodType">Type</label>
@@ -34,27 +52,32 @@
                     </div>
                     <div class="form-group">
                         <label for="cardNumber">Card / Account Number</label>
-                        <input type="text" id="cardNumber" required maxlength="16" placeholder="Last 4 digits shown">
+                        <input type="text" id="cardNumber" required maxlength="16" placeholder="16-digit card number">
                     </div>
                     <div class="form-group">
                         <label for="cardHolder">Card Holder Name</label>
-                        <input type="text" id="cardHolder" required placeholder="Name on card">
+                        <input type="text" id="cardHolder" required placeholder="Name exactly as on card">
                     </div>
-                    <div class="form-group">
-                        <label for="expiryDate">Expiry Date (MM/YY)</label>
-                        <input type="text" id="expiryDate" required placeholder="01/25"
-                            pattern="^(0[1-9]|1[0-2])/?([0-9]{2})$">
+                    
+                    <div class="d-flex gap-3">
+                        <div class="form-group w-100">
+                            <label for="expiryDate">Expiry Date</label>
+                            <input type="text" id="expiryDate" required placeholder="MM/YY" pattern="^(0[1-9]|1[0-2])/?([0-9]{2})$">
+                        </div>
+                        <div class="form-group w-100">
+                            <label for="billingAddress">Billing Address</label>
+                            <input type="text" id="billingAddress" required placeholder="Zip or full address">
+                        </div>
                     </div>
-                    <div class="form-group">
-                        <label for="billingAddress">Billing Address</label>
-                        <input type="text" id="billingAddress" required placeholder="123 Main St">
+                    
+                    <div class="form-group" style="display: flex; align-items: center; gap: 10px; margin-top: 0.5rem; margin-bottom: 1.5rem;">
+                        <input type="checkbox" id="isDefault" style="width: 20px; height: 20px; cursor: pointer;">
+                        <label for="isDefault" style="margin: 0; cursor: pointer; user-select: none;">Set as default payment method</label>
                     </div>
-                    <div class="form-group" style="display: flex; align-items: center; gap: 10px;">
-                        <input type="checkbox" id="isDefault" style="width: auto;">
-                        <label for="isDefault" style="margin: 0;">Set as default method</label>
-                    </div>
-                    <div id="addMsg" style="margin-bottom: 10px;"></div>
-                    <button type="submit" class="btn">Add Method</button>
+                    
+                    <div id="addMsg" class="alert mb-3" style="display:none;"></div>
+                    
+                    <button type="submit" class="btn btn-primary" style="width: 100%; padding: 0.8rem;">Add Method</button>
                 </form>
             </div>
         </div>
@@ -62,54 +85,25 @@
 
     <div th:replace="~{fragments/layout :: footerFragment}"></div>
 
-    <script>
-        document.addEventListener('DOMContentLoaded', loadPaymentMethods);
+    <script th:inline="javascript">
+        const currentUserId = /*[[${session.user.id}]]*/ null;
+
+        document.addEventListener('DOMContentLoaded', () => {
+             // No initial fetch needed
+        });
 
         async function loadPaymentMethods() {
-            const user = JSON.parse(sessionStorage.getItem('user'));
-            try {
-                const response = await fetch(`/api/payment-methods/user/${user.id}`, {
-                    headers: { 'Authorization': 'Bearer ' + sessionStorage.getItem('token') }
-                });
-
-                document.getElementById('pmLoader').style.display = 'none';
-
-                if (response.ok) {
-                    const methods = await response.json();
-                    if (methods.length > 0) {
-                        const listDiv = document.getElementById('pmList');
-                        methods.forEach(pm => {
-                            listDiv.innerHTML += `
-                                <div style="padding: 15px; border: 1px solid var(--border-color); border-radius: 8px; margin-bottom: 15px; display:flex; justify-content:space-between; align-items:center; background:#f8fafc;">
-                                    <div>
-                                        <div style="font-weight: 600; color: var(--text-main); font-size: 1.1rem; letter-spacing: 1px;">
-                                            **** **** **** ${pm.accountNumberMasked.slice(-4)}
-                                        </div>
-                                        <div style="font-size: 0.85rem; color: var(--text-secondary); margin-top: 4px;">
-                                            ${pm.type.replace('_', ' ')}
-                                        </div>
-                                    </div>
-                                    <button onclick="deleteMethod(${pm.id})" class="btn-sm" style="background:var(--danger); border:none; color:white; padding:6px 12px; border-radius:4px; font-weight:500;">Remove</button>
-                                </div>`;
-                        });
-                        listDiv.style.display = 'block';
-                    } else {
-                        document.getElementById('noPm').style.display = 'block';
-                    }
-                }
-            } catch (err) {
-                document.getElementById('pmLoader').innerText = "Could not load payment methods.";
-            }
+             // Reload page to refresh server-rendered list
+             window.location.reload();
         }
 
         async function handleAddPayment() {
-            const user = JSON.parse(sessionStorage.getItem('user'));
-            const cardNum = document.getElementById('cardNumber').value;
             const msg = document.getElementById('addMsg');
             const submitBtn = document.querySelector('#addPaymentForm button[type="submit"]');
+            const cardNum = document.getElementById('cardNumber').value;
 
             const payload = {
-                userId: user.id,
+                userId: currentUserId,
                 type: document.getElementById('methodType').value,
                 accountNumberMasked: cardNum,
                 expiryDate: document.getElementById('expiryDate').value,
@@ -117,28 +111,19 @@
                 isDefault: document.getElementById('isDefault').checked
             };
 
-            const originalBtnText = submitBtn.innerHTML;
-            submitBtn.innerHTML = '<span class="spinner"></span>Processing...';
-            submitBtn.disabled = true;
+            setButtonLoading(submitBtn, true, 'Processing...');
 
             try {
-                const response = await fetch(`/api/payment-methods/user/${user.id}`, {
+                const response = await fetchWithAuth(`/api/payment-methods/user/${currentUserId}`, {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': 'Bearer ' + sessionStorage.getItem('token')
-                    },
+                    headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(payload)
                 });
                 if (response.ok) {
                     msg.innerText = "Payment method added!";
                     msg.style.color = "green";
                     document.getElementById('addPaymentForm').reset();
-                    document.getElementById('pmList').innerHTML = '';
-                    document.getElementById('pmList').style.display = 'none';
-                    document.getElementById('pmLoader').style.display = 'block';
-                    document.getElementById('pmLoader').innerText = 'Loading payment methods...';
-                    await new Promise(r => setTimeout(r, 600)); // Artificial delay for smoothness
+                    await new Promise(r => setTimeout(r, 600)); 
                     loadPaymentMethods();
                 } else {
                     const data = await response.json();
@@ -148,23 +133,17 @@
                 msg.innerText = err.message;
                 msg.style.color = "red";
             } finally {
-                submitBtn.innerHTML = originalBtnText;
-                submitBtn.disabled = false;
+                setButtonLoading(submitBtn, false);
             }
         }
 
         async function deleteMethod(id) {
             if (!confirm("Remove this payment method?")) return;
-            const user = JSON.parse(sessionStorage.getItem('user'));
             try {
-                const response = await fetch(`/api/payment-methods/${id}/user/${user.id}`, {
-                    method: 'DELETE',
-                    headers: { 'Authorization': 'Bearer ' + sessionStorage.getItem('token') }
+                const response = await fetchWithAuth(`/api/payment-methods/${id}/user/${currentUserId}`, {
+                    method: 'DELETE'
                 });
                 if (response.ok) {
-                    document.getElementById('pmList').innerHTML = '';
-                    document.getElementById('pmLoader').style.display = 'block';
-                    document.getElementById('pmLoader').innerText = 'Loading payment methods...';
                     loadPaymentMethods();
                 }
             } catch (err) { }

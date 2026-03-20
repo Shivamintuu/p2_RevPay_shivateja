@@ -88,18 +88,19 @@
 
     <div th:replace="~{fragments/layout :: footerFragment}"></div>
 
-    <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            const userStr = sessionStorage.getItem('user');
-            if (!userStr || JSON.parse(userStr).role !== 'BUSINESS') {
-                window.location.href = '/dashboard';
-            }
-        });
+    <script th:inline="javascript">
+        const thymeleafUserId = /*[[${session.user.id}]]*/ null;
+        const currentUserId = thymeleafUserId || sessionStorage.getItem('userId');
 
         async function applyForLoan() {
             const btn = document.querySelector('#loanForm button[type="submit"]');
             const msg = document.getElementById('loanMsg');
-            const user = JSON.parse(sessionStorage.getItem('user'));
+            
+            if (!currentUserId) {
+                msg.innerText = "Error: User ID not found in session.";
+                msg.style.color = 'red';
+                return;
+            }
 
             const payload = {
                 amount: parseFloat(document.getElementById('loanAmount').value),
@@ -109,7 +110,7 @@
 
             setButtonLoading(btn, true, 'Submitting Application...');
             try {
-                const res = await fetchWithAuth(`/api/loans/business/${user.id}`, {
+                const res = await fetchWithAuth(`/api/loans/business/${currentUserId}`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(payload)
