@@ -1,0 +1,27 @@
+services:
+  - type: web
+    name: revpay
+    runtime: docker
+    plan: free
+    envVars:
+      - key: PORT
+        value: 8099
+      # You can override the default database settings here if you want to switch to a different database
+      # - key: SPRING_DATASOURCE_URL
+      #   value: jdbc:oracle:thin:@your-db-host:1521/your-db-service
+      # - key: SPRING_DATASOURCE_USERNAME
+      #   value: your-username
+      # - key: SPRING_DATASOURCE_PASSWORD
+      #   value: your-password
+      
+      # Email credentials (if you want to override the default ones)
+      # - key: SPRING_MAIL_USERNAME
+      #   value: your-email@gmail.com
+      # - key: SPRING_MAIL_PASSWORD
+      #   value: your-gmail-app-password
+
+      # Razorpay credentials (if you want to override the default ones)
+      # - key: RAZORPAY_KEY_ID
+      #   value: your-razorpay-key-id
+      # - key: RAZORPAY_KEY_SECRET
+      #   value: your-razorpay-key-secret
