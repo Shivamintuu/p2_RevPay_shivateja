@@ -40,9 +40,12 @@ public class SecurityConfig {
                 .requestMatchers("/", "/login", "/register", "/home", "/error", "/favicon.ico", "/css/**", "/js/**", "/img/**", "/images/**").permitAll()
                 .requestMatchers("/api/auth/**").permitAll()
                 .requestMatchers("/api/public/**").permitAll()
-                // Allow UI routes to be public for now to avoid 403 on page load (Stateless JWT)
-                .requestMatchers("/dashboard/**", "/wallet/**", "/transaction/**", "/history/**", "/user/**", "/invoice/**", "/loan/**", "/payment-method/**", "/money-request/**", "/cards/**", "/notifications/**", "/business/**", "/admin/**").permitAll() 
-                // All other requests (mostly API) should be authenticated
+                // API routes secured by Role-Based Auth (JWT)
+                .requestMatchers("/api/admin/**").hasRole("ADMIN")
+                .requestMatchers("/api/analytics/business/**", "/api/business/**").hasAnyRole("BUSINESS", "ADMIN")
+                // Allow ALL UI routes to be public in Spring Security because Thymeleaf controllers handle auth manually via HttpSession
+                .requestMatchers("/dashboard/**", "/wallet/**", "/transaction/**", "/history/**", "/user/**", "/payment-method/**", "/money-request/**", "/cards/**", "/notifications/**", "/business/**", "/invoice/**", "/loan/**", "/admin/**").permitAll()
+                // All other API requests must be authenticated
                 .anyRequest().authenticated()
             )
             .sessionManagement(session -> session

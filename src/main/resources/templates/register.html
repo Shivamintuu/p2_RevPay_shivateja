@@ -129,6 +129,15 @@
         }
 
         async function submitRegister() {
+            const passwordValue = document.getElementById("password").value;
+            const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+            if (!passwordRegex.test(passwordValue)) {
+                document.getElementById("errorMessage").innerText = "Password must be at least 8 characters long and contain at least one uppercase letter, one lowercase letter, one number, and one special character";
+                document.getElementById("errorMessage").style.display = "block";
+                document.getElementById("successMessage").style.display = "none";
+                return;
+            }
+
             const type = document.getElementById("accountType").value;
             const endpoint = type === "BUSINESS" ? '/api/auth/register/business' : '/api/auth/register/personal';
             const btn = document.querySelector('#registerForm button[type="submit"]');

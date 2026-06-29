@@ -158,7 +158,7 @@ public class AuthRestController {
     }
 
     @PostMapping("/reset-password")
-    public ResponseEntity<?> resetPassword(@RequestBody ResetPasswordRequest request) {
+    public ResponseEntity<?> resetPassword(@Valid @RequestBody ResetPasswordRequest request) {
         com.rev.app.entity.User user = userRepository.findByEmail(request.getEmail())
                 .orElseThrow(() -> new com.rev.app.exception.ResourceNotFoundException("User not found"));
 
@@ -189,7 +189,14 @@ public class AuthRestController {
 
     // Inner classes for Request Bodies
     public static class RegisterRequest {
+        @jakarta.validation.Valid
         private UserDTO user;
+
+        @jakarta.validation.constraints.NotBlank(message = "Password is required")
+        @jakarta.validation.constraints.Pattern(
+            regexp = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@$!%*?&])[A-Za-z\\d@$!%*?&]{8,}$",
+            message = "Password must be at least 8 characters long and contain at least one uppercase letter, one lowercase letter, one number, and one special character"
+        )
         private String password;
 
         public UserDTO getUser() { return user; }
@@ -233,6 +240,12 @@ public class AuthRestController {
     public static class ResetPasswordRequest {
         private String email;
         private String otp;
+
+        @jakarta.validation.constraints.NotBlank(message = "Password is required")
+        @jakarta.validation.constraints.Pattern(
+            regexp = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@$!%*?&])[A-Za-z\\d@$!%*?&]{8,}$",
+            message = "Password must be at least 8 characters long and contain at least one uppercase letter, one lowercase letter, one number, and one special character"
+        )
         private String newPassword;
 
         public String getEmail() { return email; }
