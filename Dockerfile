@@ -14,4 +14,4 @@ COPY --from=build /app/target/RevpayP2-0.0.1-SNAPSHOT.jar app.jar
 # but will respect the PORT environment variable injected by Render.
 EXPOSE 8099
 
-CMD ["java", "-jar", "app.jar"]
+CMD ["java", "-Djava.security.egd=file:/dev/./urandom", "-jar", "app.jar"]
